@@ -1,5 +1,7 @@
 <script>
     import { State } from '../../stores';
+    import Link from '../Link.svelte';
+    import { Screen } from '../../model';
 
     import { csvIntoConcept } from '../../logic/import';
 
@@ -35,6 +37,8 @@
         grid-auto-rows: minmax(100px, 300px);
         height: 100%;
         background-color: #eee;
+        padding: 10px;
+        box-sizing: border-box;
     }
     .concept {
         display: flex;
@@ -43,8 +47,12 @@
         grid-column: 1;
         grid-row: 1;
         border: 1px solid #ccc;
+        border-radius: 6px;
         font-size: 100px;
         color: steelblue;
+        background-color: white;
+        min-height: 300px;
+        cursor: pointer;
     }
 </style>
 
@@ -56,8 +64,10 @@
         +
     </div>
     {#each Object.values(concepts) as concept (concept.name) }
-        <div class="concept" on:click={ () => State.openConcept(concept.name) }>
-            { concept.name }
-        </div>
+        <Link screen={ Screen.Concept } params={ { concept: concept.name } }>
+            <div class="concept">
+                { concept.name }
+            </div>
+        </Link>
     {/each}
 </div>

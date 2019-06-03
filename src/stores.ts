@@ -13,8 +13,8 @@ function createFullState() {
         subscribe,
         initialize: () => set(getNewState()),
         load: data => set(data),
-
-        openConcept: conceptName => update(s => { s.ui.openScreen = Screen.Concept; s.ui.screenParameters = { concept: conceptName }; return s; }),
+        goTo: (screen, params) => update(s => { s.ui.openScreen = screen; s.ui.screenParameters = params; saveState(); return s; }),
+        
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
     };
 }
