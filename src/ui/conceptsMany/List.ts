@@ -1,4 +1,4 @@
-import { DataType } from "../../model";
+import { DataType, ConceptPreferences, ListConfig, Column } from "../../model";
 
 const PAGE_SIZE = 100;
 
@@ -7,26 +7,20 @@ export enum Sorting {
     Desc = "desc",
 }
 
-export interface Config {
-    sortBy: string;
-    sortDirection: string;
-    columns: { [key: string] : Column } | {};
-    pages: number;
-}
-
-export interface Column {
-    name: string;
-    filterValue: string;
-    display: boolean,
-}
-
-export function getDefaultConfig(attributes) : Config {
-    return {
-        sortBy: null,
-        sortDirection: null,
-        columns: getColumnsFromAttributes(attributes),
-        pages: 1,
-    };
+export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig {
+    console.log('getDefaultConfig');
+    
+    if (!lists || lists.length === 0) {
+        return {
+            id: 0,
+            name: "Listing",
+            sortBy: null,
+            sortDirection: null,
+            columns: getColumnsFromAttributes(attributes),
+            pages: 1,
+        };
+    }
+    return lists[0];
 }
 
 export function filterItem(item, columns : Column[]) {        
@@ -107,4 +101,31 @@ export function getList(concept, config) {
         .filter(item => filterItem(item, config.columns))
         .sort((item1, item2) => sortBy(item1, item2, config, concept.attributes))
         .slice(0, config.pages * PAGE_SIZE);
+}
+
+export function saveListConfig(oldLists : ListConfig[], listConfig : ListConfig) : ListConfig[] {
+    const isDefault = listConfig.id === 0 ? true : false;
+    let newLists = oldLists || [];
+
+    if (isDefault) {
+        listConfig.id = getNewID();
+        newLists = newLists.concat([listConfig]);
+    }
+
+    return newLists;
+}
+
+export function getNewList(attributes) : ListConfig {
+    return {
+        id: getNewID(),
+        name: "New List",
+        sortBy: null,
+        sortDirection: null,
+        columns: getColumnsFromAttributes(attributes),
+        pages: 1,
+    }
+}
+
+function getNewID() : number {
+    return Math.floor(Math.random() * 1000000000000);
 }

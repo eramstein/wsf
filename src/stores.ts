@@ -16,6 +16,7 @@ function createFullState() {
         goTo: (screen, params) => update(s => { s.ui.openScreen = screen; s.ui.screenParameters = params; saveState(); return s; }),
         
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
+        updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
     };
 }
 
@@ -23,6 +24,12 @@ function getNewState(): FullState {
     return {
         data: {
             concepts: {},
+            user: {
+                name: "Robert",
+                preferences: {
+                    concepts: {},
+                },
+            },
         },
         ui: {
             openScreen: Screen.Home,

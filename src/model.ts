@@ -23,6 +23,7 @@ export interface UI {
 
 export interface Data {
     concepts: { [key: string] : Concept };
+    user: User;
 }
 
 export interface Concept {
@@ -34,4 +35,32 @@ export interface Concept {
 export interface Attribute {
     name: string;
     type: DataType;
+}
+
+export interface User {
+    name: string;
+    preferences: Preferences;
+}
+
+export interface Preferences {
+    concepts: { [key: string] : ConceptPreferences } | {};
+}
+
+export interface ConceptPreferences {
+    lists: ListConfig[];
+}
+
+export interface ListConfig {
+    id: number;
+    name: string;
+    sortBy: string;
+    sortDirection: string;
+    columns: { [key: string] : Column } | {};
+    pages: number;
+}
+
+export interface Column {
+    name: string;
+    filterValue: string;
+    display: boolean,
 }
