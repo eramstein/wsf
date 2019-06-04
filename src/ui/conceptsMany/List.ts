@@ -7,9 +7,7 @@ export enum Sorting {
     Desc = "desc",
 }
 
-export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig {
-    console.log('getDefaultConfig');
-    
+export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig {    
     if (!lists || lists.length === 0) {
         return {
             id: 0,
@@ -96,7 +94,7 @@ export function getColumnSorting(name, configuration) {
     };
 }
 
-export function getList(concept, config) {
+export function getList(concept, config) {    
     return Object.values(concept.items)
         .filter(item => filterItem(item, config.columns))
         .sort((item1, item2) => sortBy(item1, item2, config, concept.attributes))
@@ -128,4 +126,17 @@ export function getNewList(attributes) : ListConfig {
 
 function getNewID() : number {
     return Math.floor(Math.random() * 1000000000000);
+}
+
+export function getSortArrowClass(attribute, config : ListConfig) : string {
+    let className = "";
+    if (attribute === config.sortBy) {
+        className = "arrow ";
+        if (config.sortDirection === Sorting.Asc) {
+            className += " arrow-up";
+        } else {
+            className += " arrow-down";
+        }
+    }    
+    return className;
 }

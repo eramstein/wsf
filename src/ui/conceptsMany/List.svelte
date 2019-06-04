@@ -1,7 +1,7 @@
 <script>
     import { State } from '../../stores';
     import Link from '../Link.svelte';
-    import { filterItem, sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, saveListConfig, getNewList } from './List';
+    import { filterItem, sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
     export let concept;
 
@@ -61,6 +61,7 @@
 
 <style>
     .lister {
+        margin-top: 10px;
         border-collapse: collapse;
     }
     .lister th {
@@ -71,17 +72,17 @@
         padding: 5px 10px;
         border-bottom: 1px solid #ccc;
     }
-    .filter-input{
+    .filter-input {
         width: 100px;
         margin-top: 5px;
     }
-    .lists-bar{
+    .lists-bar {
         background-color: rgb(92, 92, 92);
         height: 40px;
         display: flex;
         justify-content: space-between;
     }
-    .list-tabs{
+    .list-tabs {
         height: 100%;
         display: flex;
         flex-wrap: wrap;
@@ -93,11 +94,15 @@
         align-items: center;
         padding: 0px 20px;
         color: white;
+        cursor: pointer;
     }
-    .selected{
-        background-color: steelblue;
+    .selected, .selected:hover {
+        background-color: steelblue !important;
     }
-    .config-buttons{
+    .list-tab:hover {
+        background-color: rgba(65, 118, 163, 0.52)
+    }    
+    .config-buttons {
         height: 100%;
         display: flex;
         flex-wrap: wrap;
@@ -111,29 +116,82 @@
         color: white;
         cursor: pointer;
     }
+    .add-list {
+        font-size: 24px;
+        font-weight: bold;
+    }
+    .config {
+        padding: 10px 20px;
+    }
+    .config-name {
+        font-weight: bold;
+    }
+    .config-top-bar {
+        display: flex;
+    }
+    .config-top-bar div {
+        margin-right: 10px;
+    }
+    .config-top-bar div button {
+        cursor: pointer;
+        width: 100px;
+    }
+    .save {
+        background-color: #428e42;
+        color: white;     
+    }
+    .delete {
+        background-color: #c50404;
+        color: white;
+    }
+    .checkboxes {
+        padding: 20px 0px 0px 0px;
+        display: grid;
+        grid-template-columns: 200px 200px 200px 200px;
+        grid-column-gap: 10px;
+        grid-row-gap: 3px;
+    }
+    .column-name{
+        display: flex;
+        cursor: pointer;
+    }
+    .arrow {
+        margin-right: 5px;
+    }
+    .arrow i {
+        border: solid #333;
+        border-width: 0 3px 3px 0;
+        display: inline-block;
+        padding: 3px;
+    }
+    .arrow-down i {
+        transform: rotate(-135deg);
+    }
+    .arrow-up i {
+        transform: rotate(45deg);
+    }
+    .arrow-up {
+        margin-top: -3px;
+    }
 </style>
 
 <div>
 
     <div class="lists-bar">
         <div class="list-tabs">
-            {#if !lists }
+            {#if !lists }                
                 <div class="selected">{ config.name }</div>
             {:else}
                 {#each lists as list (list.id) }
-                    <div class:selected="{ selectedList === list.id }"
+                    <div class="list-tab" class:selected="{ selectedList === list.id }"
                         on:click={ () => selectList(list.id) }>{ list.name }</div>
                 {/each}
-                <div on:click={ () => addList() }>+</div>
+                <div class="add-list" on:click={ () => addList() }>+</div>
             {/if}
         </div>
         <div class="config-buttons">
-            {#if showConfig === true }
-            <div on:click={ () => saveConfig() }>
-                Save
-            </div>            
-            {:else}
-            <div on:click={ () => { showConfig = true; } }>
+            {#if showConfig === false }
+            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
                 Config
             </div>
             {/if}
@@ -141,14 +199,26 @@
     </div>
     
     {#if showConfig === true }
-        <div>
-            <div>Name <input bind:value={ config.name }></div>
-            {#each Object.values(config.columns) as attribute (attribute.name) }
+        <div class="config">
+            <div class="config-top-bar">
+                <div class="config-name">Name <input bind:value={ config.name }></div>
                 <div>
-                    <input type=checkbox bind:checked={ config.columns[attribute.name].display }> { attribute.name }
+                    <button on:click={ () => saveConfig() } class="save">Save</button>
+                </div>                
+                <div>
+                    <button on:click={ () => deleteList() } class="delete">Delete</button>
                 </div>
-            {/each}
-            <div on:click={ () => deleteList()}>DELETE</div>
+                <div>
+                    <button on:click={ () => { showConfig = false; } }>Cancel</button>
+                </div>
+            </div>
+            <div class="checkboxes">
+                {#each Object.values(config.columns) as attribute (attribute.name) }
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={ config.columns[attribute.name].display }> { attribute.name }
+                    </label>
+                {/each}
+            </div>
         </div>        
     {/if}
 
@@ -157,7 +227,10 @@
             <tr>
                 {#each displayedColumns as attribute (attribute.name) }
                     <th>
-                        <div on:click={ () => sortColumn(attribute.name)}>{ attribute.name }</div>
+                        <div class="column-name" on:click={ () => sortColumn(attribute.name)}>
+                            <div class={ getSortArrowClass(attribute.name, config) }><i></i></div>                            
+                            { attribute.name }
+                        </div>
                         <div>
                             <input class="filter-input" bind:value={ config.columns[attribute.name].filterValue } />
                         </div>
