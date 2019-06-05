@@ -1,9 +1,9 @@
 <script>
     import { State } from '../../stores';
     import Link from '../Link.svelte';
-    import { filterItem, sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
+    import { sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
-    export let concept;
+    let concept = $State.data.concepts[$State.ui.screenParameters.concept];
 
     let showConfig = false;
 
@@ -14,6 +14,8 @@
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
     $: lists = preferences && preferences.lists;
+
+    $: filteredItems = $State.ui.filteredItems;    
 
     function sortColumn(name) {
         const newConfig = getColumnSorting(name, config);
@@ -52,7 +54,7 @@
         showConfig = false;
     }
 
-    $: items = getList(concept, config);
+    $: items = getList(filteredItems, concept.attributes, config);
     $: displayedColumns = Object.values(config.columns).filter(c => c.display);
 
     $: selectedList = config.id;    

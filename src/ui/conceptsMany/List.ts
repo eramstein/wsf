@@ -24,7 +24,7 @@ export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig 
 export function filterItem(item, columns : Column[]) {        
     let valid = true;
     Object.values(columns).forEach(column => {
-        if (column.filterValue && item[column.name].toLowerCase().indexOf(column.filterValue.toLowerCase()) < 0) {
+        if (column.filterValue && (item[column.name]+"").toLowerCase().indexOf(column.filterValue.toLowerCase()) < 0) {
            valid = false; 
         }
     });
@@ -94,10 +94,10 @@ export function getColumnSorting(name, configuration) {
     };
 }
 
-export function getList(concept, config) {    
-    return Object.values(concept.items)
+export function getList(items, attributes, config) {    
+    return Object.values(items)
         .filter(item => filterItem(item, config.columns))
-        .sort((item1, item2) => sortBy(item1, item2, config, concept.attributes))
+        .sort((item1, item2) => sortBy(item1, item2, config, attributes))
         .slice(0, config.pages * PAGE_SIZE);
 }
 

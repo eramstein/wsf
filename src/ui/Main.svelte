@@ -3,6 +3,7 @@
     import MainBar from './MainBar.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
+    import Filters from './conceptsMany/Filters.svelte';
 </script>
 
 <style>
@@ -17,6 +18,19 @@
         flex: 0 1 auto;
     }
     .contents {
+        flex: 1 1 auto;
+    }
+    .concept {
+        display: flex;
+        height: 100%;
+    }
+    .filters {
+        width: 250px;
+        max-width: 250px;
+        flex: 1 0 auto;
+        background-color: aqua;
+    }
+    .list {
         flex: 1 1 auto;
     }
 </style>
@@ -34,7 +48,14 @@
         {/if}
 
         {#if $State.ui.openScreen === "CONCEPT"}
-            <List concept={$State.data.concepts[$State.ui.screenParameters.concept]} />
+            <div class="concept">
+                <div class="filters">
+                    <Filters />
+                </div>
+                <div class="list">
+                    <List />
+                </div>                
+            </div>
         {/if}    
 
     </div>   

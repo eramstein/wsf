@@ -1,5 +1,6 @@
 import { Concept, Attribute, DataType } from "../model";
 
+const TEXT_TYPE_TRESHOLD = 100;
 
 // assumptions:
 // - the first row is the attribute names
@@ -15,7 +16,16 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
         const obj = {};
         const currentline = lines[i].split(",");
         for(let j=0;j<headers.length;j++){
-            obj[headers[j]] = currentline[j];
+            const val = currentline[j];
+            if (!val || val === "") {
+                obj[headers[j]] = null;
+            } else {
+                if (!isNaN(parseFloat(val)) && isFinite(val)) {
+                    obj[headers[j]] = val*1;
+                } else {
+                    obj[headers[j]] = val;
+                }
+            }            
         }
         items[obj[Object.keys(obj)[0]]] = obj;
     }
@@ -24,18 +34,31 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
         attributes[headers[j]] = {
             name: headers[j],
             type: null,
+            values: {},
         }
-        for(let i=1;i<lines.length;i++){
-            const val = lines[i].split(",")[j];
-            if (val) {                
-                if (!isNaN(parseFloat(val)) && isFinite(val)) {                    
-                    attributes[headers[j]].type = DataType.Numeric;
-                } else {
-                    attributes[headers[j]].type = DataType.Categorical;
+        if (j === 0) {
+            attributes[headers[j]].type = DataType.Identifier;
+        } else {
+            for(let i=1;i<lines.length;i++){
+                const val = lines[i].split(",")[j];
+                if (val) {                
+                    if (!isNaN(parseFloat(val)) && isFinite(val)) {                    
+                        attributes[headers[j]].type = DataType.Numeric;
+                    } else {
+                        attributes[headers[j]].type = DataType.Categorical;
+                        attributes[headers[j]].values[val] = true;
+                    }
+                    if (attributes[headers[j]].type === DataType.Numeric) {
+                        break;
+                    }
+                    if (Object.keys(attributes[headers[j]].values).length > TEXT_TYPE_TRESHOLD) {
+                        attributes[headers[j]].type = DataType.Text;
+                        break;
+                    }
                 }
-                break;
-            }
-        }       
+            }  
+        }
+        delete attributes[headers[j]].values;
     }
     
     return {

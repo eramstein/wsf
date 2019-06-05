@@ -1,6 +1,7 @@
 import { get, writable } from "svelte/store";
 import { handleKeyPress } from "./keybinds";
 import { FullState, Screen } from "./model";
+import { mutateStateAfterNavigation } from "./logic/navigation";
 
 export const State = createFullState();
 
@@ -13,9 +14,10 @@ function createFullState() {
         subscribe,
         initialize: () => set(getNewState()),
         load: data => set(data),
-        goTo: (screen, params) => update(s => { s.ui.openScreen = screen; s.ui.screenParameters = params; saveState(); return s; }),
+        goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s); saveState(); return s; }),
         
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
+        filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
         updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
     };
 }
@@ -34,6 +36,7 @@ function getNewState(): FullState {
         ui: {
             openScreen: Screen.Home,
             screenParameters: null,
+            filteredItems: [],
         },
     };
 }

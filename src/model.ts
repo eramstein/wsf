@@ -1,3 +1,5 @@
+import { SpreadElement } from "estree";
+
 export enum Screen {
     Home = "HOME",
     Concepts = "CONCEPTS",
@@ -7,8 +9,10 @@ export enum Screen {
 }
 
 export enum DataType {
+    Identifier = "IDENTIFIER",
     Numeric = "NUMERIC",
     Categorical = "CATEGORICAL",
+    Text = "TEXT",
 } 
 
 export interface FullState {
@@ -19,6 +23,7 @@ export interface FullState {
 export interface UI {
     openScreen: Screen;
     screenParameters: any;
+    filteredItems: any[] | [];
 }
 
 export interface Data {
@@ -48,6 +53,7 @@ export interface Preferences {
 
 export interface ConceptPreferences {
     lists: ListConfig[];
+    filters: [{ [key: string] : FilterConfig }];
 }
 
 export interface ListConfig {
@@ -63,4 +69,13 @@ export interface Column {
     name: string;
     filterValue: string;
     display: boolean,
+}
+
+export interface FilterConfig {
+    collapsed: boolean;
+    categories: { [key: string] : {
+        selected: boolean;        
+    } };
+    from: number;
+    to: number;
 }
