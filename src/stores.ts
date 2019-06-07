@@ -19,6 +19,8 @@ function createFullState() {
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
         filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
         updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
+        updateConceptFilters: (conceptName, filters) => update(s => { s.data.user.preferences.concepts[conceptName].filters = filters; saveState(); return s; }),
+        updateFiltersData: data => update(s => { s.ui.filterData = data; return s; }),
     };
 }
 
@@ -37,6 +39,7 @@ function getNewState(): FullState {
             openScreen: Screen.Home,
             screenParameters: null,
             filteredItems: [],
+            filterData: [],
         },
     };
 }

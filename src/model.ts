@@ -1,4 +1,4 @@
-import { SpreadElement } from "estree";
+import { FilterData } from "./ui/conceptsMany/Filters";
 
 export enum Screen {
     Home = "HOME",
@@ -24,6 +24,7 @@ export interface UI {
     openScreen: Screen;
     screenParameters: any;
     filteredItems: any[] | [];
+    filterData: FilterData[];
 }
 
 export interface Data {
@@ -53,7 +54,7 @@ export interface Preferences {
 
 export interface ConceptPreferences {
     lists: ListConfig[];
-    filters: [{ [key: string] : FilterConfig }];
+    filters: { [key: string] : FilterConfig };
 }
 
 export interface ListConfig {

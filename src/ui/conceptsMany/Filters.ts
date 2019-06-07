@@ -1,5 +1,9 @@
 import { State } from '../../stores';
+import { get } from "svelte/store";
 import { Concept, FilterConfig, DataType } from "../../model";
+
+export const FILTER_LABEL_WIDTH = 130;
+export const FILTER_VALUE_WIDTH = 150;
 
 export interface FilterData {
     attribute: string;
@@ -17,22 +21,34 @@ export interface Spread {
 }
 
 export interface Category {
-    name: string;
+    label: string;
     value: number;
 }
 
-export function getFiltersData(concept : Concept, items) : FilterData[] {    
-    
-    let result = [];
-    
+export function setFiltersData(concept : Concept, items, filters : FilterConfig) { 
+    let result = [];    
     Object.values(concept.attributes).forEach(attribute => {
         if (attribute.type === DataType.Numeric || attribute.type === DataType.Categorical) {
             const newVal : FilterData = {
                 attribute: attribute.name,
                 type: attribute.type,
             };
+            const preferenceArray = Object.entries(filters).map(a => { return { name: a[0], ...a[1] } });    
+            const filteredItems = items.filter(item => {
+                let valid = true;
+                preferenceArray.filter(preference => preference.name !== attribute.name).forEach(preference => {
+                    const value = item[preference.name];
+                    if (preference.from !== null && value*1 < preference.from
+                        || preference.to !== null && value*1 > preference.to
+                        || Object.entries(preference.categories).length !== 0 && !preference.categories[value]
+                        ) {
+                        valid = false;
+                    }
+                });
+                return valid;
+            });
             if (attribute.type === DataType.Numeric) {
-                const sortedItems = items.filter(a => a[attribute.name] !== null).sort((a, b) => a[attribute.name] - b[attribute.name]);             
+                const sortedItems = filteredItems.filter(a => a[attribute.name] !== null).sort((a, b) => a[attribute.name] - b[attribute.name]);             
                 if (sortedItems.length >= 1) {
                     newVal.spread = {
                         min: sortedItems[0][attribute.name],
@@ -44,7 +60,7 @@ export function getFiltersData(concept : Concept, items) : FilterData[] {
                 }                                
             }
             if (attribute.type === DataType.Categorical) {
-                const categories : { [key: string] : number } = items.reduce((agg, item) => {
+                const categories : { [key: string] : number } = filteredItems.reduce((agg, item) => {
                     const val = item[attribute.name];
                     if (!agg[val]) {
                         agg[val] = 1;
@@ -53,22 +69,65 @@ export function getFiltersData(concept : Concept, items) : FilterData[] {
                     }
                     return agg;
                 }, {});
-                newVal.categories = Object.entries(categories).map(a => {return { name:a[0], value:a[1] } } );
+                const categoriesArray =
+                    Object.entries(categories)
+                        .map(a => {return { label:a[0], value:a[1] } } )
+                        .sort((a, b) => b.value - a.value);
+                const maxValue = categoriesArray[0].value;
+                newVal.categories = categoriesArray.map((a, i) => { return { ...a, position: i, sizePercent: Math.floor(a.value/maxValue*100) } } );
             }
             if (newVal.spread || newVal.categories) {
                 result.push(newVal);
             }
         }
     });
-    console.log('getFiltersData', result);
-    return result;
+    
+    State.updateFiltersData(result);
 }
 
-export function getDefaultFilterConfig(concept : Concept) : { [key: string] : FilterConfig } {
-    return {};
+export function setDefaultFilterConfig(concept : Concept) {
+    const filtersPreferences : { [key: string] : FilterConfig } = {};
+    Object.values(concept.attributes).forEach(attribute => {
+        filtersPreferences[attribute.name] = {
+            collapsed: false,
+            from: null,
+            to: null,
+            categories: {},
+        }
+    });
+    State.updateConceptFilters(concept.name, filtersPreferences);
 }
 
-export function filterData(items) {
-    const filteredItems = items.slice(0, 5);
-    State.filterData(filteredItems);
+export function getFilteredItems(preferences : FilterConfig) {
+    const savedData = get(State);
+    const allItems = Object.values(savedData.data.concepts[savedData.ui.screenParameters.concept].items);
+    const preferenceArray = Object.entries(preferences).map(a => { return { name: a[0], ...a[1] } });    
+    const filteredItems = allItems.filter(item => {
+        let valid = true;
+        preferenceArray.forEach(preference => {
+            const value = item[preference.name];
+            if (preference.from !== null && value*1 < preference.from
+                || preference.to !== null && value*1 > preference.to
+                || Object.entries(preference.categories).length !== 0 && !preference.categories[value]
+                ) {
+                valid = false;
+            }
+        });
+        return valid;
+    });
+    return filteredItems;
+}
+
+export function toggleCategory(attribute, category) {
+    const savedData = get(State);
+    const conceptName = savedData.ui.screenParameters.concept;
+    const preferences = savedData.data.user.preferences.concepts[conceptName].filters;
+    const value = preferences[attribute].categories[category] ? true : false;
+    if (!value) {
+        preferences[attribute].categories[category] = true;
+    } else {
+        delete preferences[attribute].categories[category];
+    }
+    State.updateConceptFilters(conceptName, preferences);
+    State.filterData(getFilteredItems(preferences));
 }

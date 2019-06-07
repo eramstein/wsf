@@ -4,6 +4,9 @@
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
     import Filters from './conceptsMany/Filters.svelte';
+    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH } from './conceptsMany/filters';
+
+    const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + 40;
 </script>
 
 <style>
@@ -25,14 +28,12 @@
         height: 100%;
     }
     .filters {
-        width: 250px;
-        max-width: 250px;
         flex: 1 0 auto;
-        background-color: aqua;
+        border-right: 1px solid #ccc;
     }
     .list {
         flex: 1 1 auto;
-    }
+    }    
 </style>
 
 <div class="screen">
@@ -49,7 +50,7 @@
 
         {#if $State.ui.openScreen === "CONCEPT"}
             <div class="concept">
-                <div class="filters">
+                <div class="filters"  style="width: {filtersWidth}px; max-width: {filtersWidth}px">
                     <Filters />
                 </div>
                 <div class="list">
