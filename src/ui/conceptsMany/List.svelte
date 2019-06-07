@@ -71,7 +71,7 @@
         text-align: left;
     }
     .lister th, .lister td {
-        padding: 5px 10px;
+        padding: 5px 0px 5px 20px;
         border-bottom: 1px solid #ccc;
     }
     .filter-input {

@@ -4,9 +4,9 @@
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
     import Filters from './conceptsMany/Filters.svelte';
-    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH } from './conceptsMany/filters';
+    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
-    const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + 40;
+    const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + FILTER_VALUE_PADDING;
 </script>
 
 <style>

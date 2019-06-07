@@ -4,6 +4,8 @@ import { Concept, FilterConfig, DataType } from "../../model";
 
 export const FILTER_LABEL_WIDTH = 130;
 export const FILTER_VALUE_WIDTH = 150;
+export const FILTER_VALUE_PADDING = 40;
+export const CATEGORIES_LIMITED_DISPLAYED = 7;
 
 export interface FilterData {
     attribute: string;
@@ -49,7 +51,7 @@ export function setFiltersData(concept : Concept, items, filters : FilterConfig)
             });
             if (attribute.type === DataType.Numeric) {
                 const sortedItems = filteredItems.filter(a => a[attribute.name] !== null).sort((a, b) => a[attribute.name] - b[attribute.name]);             
-                if (sortedItems.length >= 1) {
+                if (sortedItems.length > 0) {
                     newVal.spread = {
                         min: sortedItems[0][attribute.name],
                         max: sortedItems[sortedItems.length - 1][attribute.name],
@@ -57,9 +59,9 @@ export function setFiltersData(concept : Concept, items, filters : FilterConfig)
                         q1: sortedItems[Math.floor(sortedItems.length / 4)][attribute.name],
                         q3: sortedItems[Math.floor(sortedItems.length * 3 / 4)][attribute.name],
                     };
-                }                                
+                }                             
             }
-            if (attribute.type === DataType.Categorical) {
+            if (filteredItems.length > 0 && attribute.type === DataType.Categorical) {
                 const categories : { [key: string] : number } = filteredItems.reduce((agg, item) => {
                     const val = item[attribute.name];
                     if (!agg[val]) {
@@ -90,6 +92,7 @@ export function setDefaultFilterConfig(concept : Concept) {
     Object.values(concept.attributes).forEach(attribute => {
         filtersPreferences[attribute.name] = {
             collapsed: false,
+            limited: false,
             from: null,
             to: null,
             categories: {},
@@ -128,6 +131,47 @@ export function toggleCategory(attribute, category) {
     } else {
         delete preferences[attribute].categories[category];
     }
+
     State.updateConceptFilters(conceptName, preferences);
     State.filterData(getFilteredItems(preferences));
+}
+
+export function setNumericRange(attribute, from, to) {
+    const savedData = get(State);
+    const conceptName = savedData.ui.screenParameters.concept;
+    const preferences = savedData.data.user.preferences.concepts[conceptName].filters;    
+    preferences[attribute].from = from;
+    preferences[attribute].to = to;
+    
+    State.updateConceptFilters(conceptName, preferences);
+    State.filterData(getFilteredItems(preferences));
+}
+
+export function toggleAttribute(attribute) {
+    const savedData = get(State);
+    const conceptName = savedData.ui.screenParameters.concept;
+    const preferences = savedData.data.user.preferences.concepts[conceptName].filters;
+    const attributePreferences = preferences[attribute];
+    const categories = savedData.ui.filterData.filter(f => f.attribute === attribute)[0].categories;
+    const { limited, collapsed } = attributePreferences;
+
+    if (collapsed) {
+        if (categories && categories.length > CATEGORIES_LIMITED_DISPLAYED) {
+            attributePreferences.collapsed = false;
+            attributePreferences.limited = true;
+        } else {
+            attributePreferences.collapsed = false;
+            attributePreferences.limited = false;
+        }        
+    } else {
+        if (limited) {
+            attributePreferences.collapsed = false;
+            attributePreferences.limited = false;
+        } else {
+            attributePreferences.collapsed = true;
+            attributePreferences.limited = false;
+        }
+    }
+    
+    State.updateConceptFilters(conceptName, preferences);
 }

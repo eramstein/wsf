@@ -74,6 +74,7 @@ export interface Column {
 
 export interface FilterConfig {
     collapsed: boolean;
+    limited: boolean;
     categories: { [key: string] : {
         selected: boolean;        
     } };

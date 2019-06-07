@@ -1,6 +1,6 @@
 import { DataType, ConceptPreferences, ListConfig, Column } from "../../model";
 
-const PAGE_SIZE = 30;
+const PAGE_SIZE = 60;
 
 export enum Sorting {
     Asc = "asc",

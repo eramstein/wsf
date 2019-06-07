@@ -1,6 +1,6 @@
 '<script>
     import { State } from '../../stores';
-    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, toggleCategory } from './filters';
+    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, CATEGORIES_LIMITED_DISPLAYED, toggleCategory } from './filters';
 
     export let categories;
     export let filters;
@@ -28,7 +28,12 @@
         }
     });    
     
-    $: categoriesForChart.sort((a, b) => a.label.localeCompare(b.label));
+    $: {
+        if (filters.limited) {
+            categoriesForChart = categoriesForChart.slice(0, CATEGORIES_LIMITED_DISPLAYED);
+        }
+        categoriesForChart.sort((a, b) => a.label.localeCompare(b.label));
+    }
 
 </script>
 
@@ -38,6 +43,7 @@
         margin-bottom: 1px;
         position: absolute;
         transition: all 0.5s;
+        cursor: pointer;
     }
     .category-name-container {
         padding-right: 10px;
@@ -51,17 +57,20 @@
         white-space: nowrap;
     }
     .category-value {
-        text-align: right;
-        color: white;
+        position: relative;
         padding-right: 5px;
         padding-top: 3px;
         padding-bottom: 3px;
         font-size: 80%;
         transition: all 0.5s;
+        height: 15px;
+    }
+    .category-label {
+        position: absolute;
     }
 </style>
 
-<div style="position:relative;height: {(BAR_HEIGHT+1)*categories.length}px;">
+<div style="position:relative;height: {(BAR_HEIGHT+1)*Object.keys(categoriesForChart).length}px;">
     {#each categoriesForChart as category (category.label) }
         <div class="category"
              on:click={ () => toggleCategory(attribute, category.label)}
@@ -76,7 +85,14 @@
                 <div class="category-value"
                     style="width: {category.sizePercent}%;
                            background-color: {filters.categories[category.label] ? 'red' : 'steelblue'}">
-                    { category.value }
+                    <div class="category-label"
+                        style="color: {category.sizePercent > 10 ? 'white' : '#333' };
+                               right: {category.sizePercent > 10 ? '5px' : null };
+                               left: {category.sizePercent > 10 ? null : '110%' };
+                               "
+                    >
+                        { category.value }
+                    </div>
                 </div>                
             </div>
         </div>   
