@@ -1,7 +1,7 @@
 <script>
     import { State } from '../../stores';
     import Link from '../Link.svelte';
-    import { Screen } from '../../model';
+    import { Screen, ConceptScreen } from '../../model';
 
     import { csvIntoConcept } from '../../logic/import';
 
@@ -64,7 +64,7 @@
         +
     </div>
     {#each Object.values(concepts) as concept (concept.name) }
-        <Link screen={ Screen.Concept } params={ { concept: concept.name } }>
+        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.List } }>
             <div class="concept">
                 { concept.name }
             </div>

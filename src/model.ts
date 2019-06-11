@@ -8,6 +8,11 @@ export enum Screen {
     Articles = "ARTICLES",
 }
 
+export enum ConceptScreen {
+    Lists = "LISTS",
+    Charts = "CHARTS",
+}
+
 export enum DataType {
     Identifier = "IDENTIFIER",
     Numeric = "NUMERIC",

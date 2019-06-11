@@ -1,8 +1,10 @@
 <script>
     import { State } from '../stores';
+    import { Screen, ConceptScreen } from '../model';
     import MainBar from './MainBar.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
+    import Chart from './conceptsMany/Chart.svelte';
     import Filters from './conceptsMany/Filters.svelte';
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
@@ -31,7 +33,7 @@
         flex: 1 0 auto;
         border-right: 1px solid #ccc;
     }
-    .list {
+    .contents {
         flex: 1 1 auto;
     }    
 </style>
@@ -44,17 +46,21 @@
 
     <div class="contents">
 
-        {#if $State.ui.openScreen === "HOME" || $State.ui.openScreen === "CONCEPTS"}
+        {#if $State.ui.openScreen === Screen.Home || $State.ui.openScreen === Screen.Concepts}
             <Concepts concepts={$State.data.concepts} />
         {/if}
 
-        {#if $State.ui.openScreen === "CONCEPT"}
+        {#if $State.ui.openScreen === Screen.Concept}
             <div class="concept">
                 <div class="filters"  style="width: {filtersWidth}px; max-width: {filtersWidth}px">
                     <Filters />
                 </div>
-                <div class="list">
-                    <List />
+                <div class="contents">
+                    {#if $State.ui.screenParameters.widget === ConceptScreen.Lists}
+                        <List />
+                    {:else}
+                        <Chart />
+                    {/if}
                 </div>                
             </div>
         {/if}    
