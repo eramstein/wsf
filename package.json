@@ -22,5 +22,8 @@
     "start": "sirv public",
     "start:dev": "sirv public --dev",
     "lint": "tslint --fix -c ./tslint.json 'src/**/*{.ts,.tsx}'"
+  },
+  "dependencies": {
+    "d3": "^5.9.2"
   }
 }
