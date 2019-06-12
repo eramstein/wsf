@@ -27,28 +27,34 @@ export interface Category {
     value: number;
 }
 
-export function setFiltersData(concept : Concept, items, filters : FilterConfig) { 
-    let result = [];    
+export function setFiltersData(concept : Concept, items, filters : FilterConfig) {
+    let result = [];
+    const preferenceArray = Object.entries(filters).map(a => { return { name: a[0], ...a[1] } });    
+    
     Object.values(concept.attributes).forEach(attribute => {
         if (attribute.type === DataType.Numeric || attribute.type === DataType.Categorical) {
             const newVal : FilterData = {
                 attribute: attribute.name,
                 type: attribute.type,
             };
-            const preferenceArray = Object.entries(filters).map(a => { return { name: a[0], ...a[1] } });    
+            const preferences = preferenceArray
+                .filter(p => p.name !== attribute.name)
+                .map(p => { return { ...p, categories: Object.entries(p.categories).length === 0 ? null : p.categories } });
+                
             const filteredItems = items.filter(item => {
                 let valid = true;
-                preferenceArray.filter(preference => preference.name !== attribute.name).forEach(preference => {
+                preferences.forEach(preference => {
                     const value = item[preference.name];
-                    if (preference.from !== null && value*1 < preference.from
-                        || preference.to !== null && value*1 > preference.to
-                        || Object.entries(preference.categories).length !== 0 && !preference.categories[value]
+                    if (preference.from !== null && value < preference.from
+                        || preference.to !== null && value > preference.to
+                        || preference.categories && !preference.categories[value]
                         ) {
                         valid = false;
                     }
                 });
                 return valid;
             });
+            
             if (attribute.type === DataType.Numeric) {
                 const sortedItems = filteredItems.filter(a => a[attribute.name] !== null).sort((a, b) => a[attribute.name] - b[attribute.name]);             
                 if (sortedItems.length > 0) {
@@ -83,7 +89,6 @@ export function setFiltersData(concept : Concept, items, filters : FilterConfig)
             }
         }
     });
-    
     State.updateFiltersData(result);
 }
 
