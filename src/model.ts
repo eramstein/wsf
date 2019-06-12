@@ -1,4 +1,5 @@
 import { FilterData } from "./ui/conceptsMany/Filters";
+import { ChartConfig } from "./ui/conceptsMany/Chart";
 
 export enum Screen {
     Home = "HOME",
@@ -30,6 +31,7 @@ export interface UI {
     screenParameters: any;
     filteredItems: any[] | [];
     filterData: FilterData[];
+    chartConfig: ChartConfig;
 }
 
 export interface Data {

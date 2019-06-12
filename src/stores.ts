@@ -12,6 +12,8 @@ function createFullState() {
 
     return {
         subscribe,
+        update,
+        set,
         initialize: () => set(getNewState()),
         load: data => set(data),
         goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s); saveState(); return s; }),
@@ -21,6 +23,7 @@ function createFullState() {
         updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
         updateConceptFilters: (conceptName, filters) => update(s => { s.data.user.preferences.concepts[conceptName].filters = filters; saveState(); return s; }),
         updateFiltersData: data => update(s => { s.ui.filterData = data; return s; }),
+        updateChartConfig: config => update(s => { s.ui.chartConfig = config; saveState(); return s; }),
     };
 }
 
@@ -40,6 +43,13 @@ function getNewState(): FullState {
             screenParameters: null,
             filteredItems: [],
             filterData: [],
+            chartConfig: {
+                colorBy: null,
+                sizeBy: null,
+                posBy1: null,
+                posBy2: null,
+                chartType: null,
+            },
         },
     };
 }
