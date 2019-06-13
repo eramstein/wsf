@@ -1,6 +1,7 @@
 import { State } from '../../stores';
 import { get } from "svelte/store";
 import { Concept, FilterConfig, DataType } from "../../model";
+import { Spread, getSpreadBy } from '../../utils';
 
 export const FILTER_LABEL_WIDTH = 130;
 export const FILTER_VALUE_WIDTH = 150;
@@ -12,14 +13,6 @@ export interface FilterData {
     type: string;
     spread?: Spread;
     categories?: Category[];
-}
-
-export interface Spread {
-    min: number;
-    max: number;
-    med: number;
-    q1: number;
-    q3: number;
 }
 
 export interface Category {
@@ -56,16 +49,7 @@ export function setFiltersData(concept : Concept, items, filters : FilterConfig)
             });
             
             if (attribute.type === DataType.Numeric) {
-                const sortedItems = filteredItems.filter(a => a[attribute.name] !== null).sort((a, b) => a[attribute.name] - b[attribute.name]);             
-                if (sortedItems.length > 0) {
-                    newVal.spread = {
-                        min: sortedItems[0][attribute.name],
-                        max: sortedItems[sortedItems.length - 1][attribute.name],
-                        med: sortedItems[Math.floor(sortedItems.length / 2)][attribute.name],
-                        q1: sortedItems[Math.floor(sortedItems.length / 4)][attribute.name],
-                        q3: sortedItems[Math.floor(sortedItems.length * 3 / 4)][attribute.name],
-                    };
-                }                             
+                newVal.spread = getSpreadBy(filteredItems, attribute.name);
             }
             if (filteredItems.length > 0 && attribute.type === DataType.Categorical) {
                 const categories : { [key: string] : number } = filteredItems.reduce((agg, item) => {

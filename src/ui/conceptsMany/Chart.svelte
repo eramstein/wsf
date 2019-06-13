@@ -23,8 +23,12 @@
     
     $: {
         if (chart) {
-            chart.update($State.ui.filteredItems);
+            chart.update($State.ui.filteredItems, $State.ui.chartConfig, $State.data.concepts[$State.ui.screenParameters.concept].attributes);
         }        
+    }
+
+    function save() {
+        State.updateChartConfig(config);
     }
 
 </script>
@@ -49,6 +53,9 @@
         <div>
             <span>Color By </span>
             <select bind:value={$State.ui.chartConfig.colorBy}>
+                <option value={null}>
+                    -
+                </option>
                 {#each categoricalAttributes as attribute}
                     <option value={attribute.attribute}>
                         {attribute.attribute}
@@ -59,6 +66,9 @@
         <div>
             <span>Size By </span>
             <select bind:value={$State.ui.chartConfig.sizeBy}>
+                <option value={null}>
+                    -
+                </option>
                 {#each quantitativeAttributes as attribute}
                     <option value={attribute.attribute}>
                         {attribute.attribute}
@@ -79,12 +89,20 @@
         <div>
             <span>And </span>
             <select bind:value={$State.ui.chartConfig.posBy2}>
+                <option value={null}>
+                    -
+                </option>
                 {#each attributes as attribute}
                     <option value={attribute.attribute}>
                         {attribute.attribute}
                     </option>
                 {/each}
             </select>
+        </div>
+        <div>
+            <button on:click="{() => save()}">
+                Save
+            </button>
         </div>
     </div>
     <canvas id="canvas"></canvas>
