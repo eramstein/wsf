@@ -1,5 +1,5 @@
 import { Attribute, DataType } from "../../model";
-import { getSpreadBy } from "../../utils";
+import { getSpreadBy, Spread } from "../../utils";
 
 export interface ChartConfig {
     colorBy: string;
@@ -10,14 +10,29 @@ export interface ChartConfig {
 }
 
 export interface Bubble {
+    id: string;
     x: number;
     y: number;
-    targetX: number;
-    targetY: number;
     color: string;
-    size: number;
+    width: number;
+    height: number;
     data: {any};
 }
+
+export interface Helpers {
+    spreadX: Spread;
+    spreadY: Spread;
+    width: number;
+    height: number;
+    margin: {
+        top: number,
+        bottom: number,
+        right: number,
+        left: number,
+    };
+}
+
+const ANIMATION_DURATION = 1000;
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -26,64 +41,104 @@ export const bubbleChart = function() {
     canvas.width  = canvas.offsetWidth;
     canvas.height = document.body.clientHeight - 110; // TODO: magic number which is the 2 menus height on top    
     
-    let _this = this;       
-
     const margin = { top: 20, right: 20, bottom: 20, left: 20 };
 
-    let width = canvas.width - margin.right - margin.left;
-    let height = canvas.height - margin.top - margin.bottom;
+    let bubbleMap : { [key: string] : Bubble } = {};
 
-    _this.build = function() {
+    const helpers = <Helpers>{
+        margin, 
+        width: canvas.width - margin.right - margin.left,
+        height: canvas.height - margin.top - margin.bottom,
+    };
+
+    this.build = function() {
 
         console.log('BUILD CHART');     
 
     };
 
-    _this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
+    this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
 
-        console.log('UPDATE CHART');
+        helpers.spreadX = getSpreadBy(data, config.posBy1);
+        helpers.spreadY = getSpreadBy(data, config.posBy2);
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);        
+        console.log('UPDATE CHART');        
 
-        let bubbles : Bubble[] = [];
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        
         const type1 = attributes[config.posBy1] && attributes[config.posBy1].type;
         const type2 = attributes[config.posBy2] && attributes[config.posBy2].type;
+        const identifier = Object.entries(attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
+
+        let bubbles : Bubble[] = [];
 
         bubbles = data.map(d => {
             return {
+                id: d[identifier],
                 x: 0,
                 y: 0,
-                targetX: 0,
-                targetY: 0,
                 data: d,
                 color: 'rgba(70, 130, 180, 0.5)',
-                size: 10,
+                width: 10,
+                height: 10,
             };
-        });
+        });        
 
         if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
-            bubbles = scatterPlot(ctx, data, bubbles,  config, width, height, margin);
+            bubbles = scatterPlotBubbles(bubbles, config, helpers);
         }
         else {
-            bubbles = randomPos(bubbles, width, height);
+            bubbles = randomPos(bubbles, helpers);
         }        
 
-        bubbles.forEach(d => {
-            ctx.fillStyle = d.color;
-            ctx.fillRect(d.x, d.y, d.size, d.size);
-        });
+        const startTime = new Date().getTime();
+        let frames = 0;       
+
+        function draw() {
+            const now = new Date().getTime();
+            const animationProgress = Math.min(1, (now - startTime) / ANIMATION_DURATION);
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            bubbles.forEach(d => {
+                ctx.fillStyle = d.color;
+                const old = bubbleMap[d.id] || {x: 0, y: 0};
+                const newX = old.x + (d.x - old.x) * animationProgress;
+                const newY = old.y + (d.y - old.y) * animationProgress;
+                ctx.fillRect(newX, newY, d.width, d.height);
+            });
+            
+            frames++;
+            if (animationProgress < 1) {
+                window.requestAnimationFrame(draw);
+            } else {
+                console.log('frames', frames);
+                onDrawFinished();
+            }     
+        }
+        
+        function onDrawFinished() {
+            bubbles.forEach(d => {
+                bubbleMap[d.id] = d;
+            });
+            if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
+                scatterPlotAxis(ctx, helpers);
+            }
+        }
+
+        draw();       
 
     };
 };
 
-function randomPos(data : Bubble[], width, height) : Bubble[] {
-    return data.map((d, i) => mapRandom(i, d, width, height));
+function randomPos(data : Bubble[], helpers) : Bubble[] {
+    return data.map((d, i) => mapRandom(i, d, helpers.width, helpers.height));
 }
 
-function scatterPlot(ctx, data: [any], bubbles : Bubble[], config : ChartConfig, width : number, height: number, margin) : Bubble[] {
-    const spreadX = getSpreadBy(data, config.posBy1);
-    const spreadY = getSpreadBy(data, config.posBy2);
+function scatterPlotBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
 
+    const { width, height, margin, spreadX, spreadY } = helpers;    
+   
     const axisSize = { left: 60, bottom: 60 };
 
     const innerWidth = width - axisSize.left;
@@ -101,12 +156,30 @@ function scatterPlot(ctx, data: [any], bubbles : Bubble[], config : ChartConfig,
     const result = bubbles.map((d, i) => {
         return {
             ...d,
-            x: scaleX(d.data[config.posBy1]) - d.size/2,
-            y: scaleY(d.data[config.posBy2]) - d.size/2,
-            targetX: 0,
-            targetY: 0,            
+            x: scaleX(d.data[config.posBy1]) - d.width/2,
+            y: scaleY(d.data[config.posBy2]) - d.height/2,
         }
     });
+
+    return result;
+}
+
+function scatterPlotAxis(ctx, helpers : Helpers) {
+
+    const { width, height, margin, spreadX, spreadY } = helpers;
+   
+    const axisSize = { left: 60, bottom: 60 };
+
+    const innerWidth = width - axisSize.left;
+    const innerHeight = height - axisSize.bottom;
+
+    function scaleX(v) {
+        return axisSize.left + margin.left + (v - spreadX.min) / (spreadX.max - spreadX.min) * innerWidth;
+    }
+
+    function scaleY(v) {
+        return margin.top + innerHeight - (v - spreadY.min) / (spreadY.max - spreadY.min) * innerHeight;
+    }
 
     // draw helper elements
     ctx.fillStyle = '#333';
@@ -136,7 +209,6 @@ function scatterPlot(ctx, data: [any], bubbles : Bubble[], config : ChartConfig,
     ctx.fillText(spreadY.q3, axisSize.left - 30, 4 + scaleY(spreadY.q3));
     ctx.fillText(spreadY.med, axisSize.left - 30, 4 + scaleY(spreadY.med));
 
-    return result;
 }
 
 function mapRandom(i : number, d : Bubble, width : number, height: number) : Bubble {    
@@ -144,8 +216,6 @@ function mapRandom(i : number, d : Bubble, width : number, height: number) : Bub
         ...d,
         x: Math.floor(Math.random()*width),
         y: Math.floor(Math.random()*height),
-        targetX: 0,
-        targetY: 0,
     };
 }
 
