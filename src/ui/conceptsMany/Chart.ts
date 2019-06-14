@@ -33,6 +33,11 @@ export interface Helpers {
 }
 
 const ANIMATION_DURATION = 750;
+const INNER_MARGINS = {
+    left: 100,
+    bottom: 70,
+};
+const COLORS = ['#0366d6', '#ff7f00', '#25a221', '#d8281f', '#9563bf', '#8d5549', '#e574c4', '#7f7f7f', '#bcbe00', '#00bed0', '#1c9e77', '#da5f03', '#756fb3', '#e8298a', '#66a61e', '#e7ab01', '#a6751e'];
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -41,7 +46,7 @@ export const bubbleChart = function() {
     canvas.width  = canvas.offsetWidth;
     canvas.height = document.body.clientHeight - 110; // TODO: magic number which is the 2 menus height on top    
     
-    const margin = { top: 20, right: 20, bottom: 20, left: 20 };
+    const margin = { top: 40, right: 20, bottom: 20, left: 20 };
 
     let bubbleMap : { [key: string] : Bubble } = {};
 
@@ -56,6 +61,8 @@ export const bubbleChart = function() {
         spreadY: { min: 0, max: 0, med: 0, q1: 0, q3: 0 },
     };
     
+    let colorScale = {};
+    let oldConfig = <ChartConfig>{};
 
     this.build = function() {
 
@@ -64,11 +71,10 @@ export const bubbleChart = function() {
     };
 
     this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
+        console.log('UPDATE CHART');
 
         helpers.spreadX = getSpreadBy(data, config.posBy1);
-        helpers.spreadY = getSpreadBy(data, config.posBy2);
-
-        console.log('UPDATE CHART');        
+        helpers.spreadY = getSpreadBy(data, config.posBy2);          
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         
@@ -77,14 +83,23 @@ export const bubbleChart = function() {
         const identifier = Object.entries(attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
 
         let bubbles : Bubble[] = [];
+        
+        let colorIndex = 0;
+        if (oldConfig.colorBy !== config.colorBy) {
+            colorScale = {};
+        }
 
-        bubbles = data.map(d => {
+        bubbles = data.map(d => {            
+            if (config.colorBy && !colorScale[d[config.colorBy]]) {
+                colorScale[d[config.colorBy]] = COLORS[colorIndex % COLORS.length];
+                colorIndex++;
+            }
             return {
                 id: d[identifier],
                 x: 0,
                 y: 0,
                 data: d,
-                color: 'rgba(70, 130, 180, 0.5)',
+                color: config.colorBy ? colorScale[d[config.colorBy]] : 'rgba(70, 130, 180, 1)',
                 width: 10,
                 height: 10,
             };
@@ -95,7 +110,7 @@ export const bubbleChart = function() {
         }
         else {
             bubbles = randomPos(bubbles, helpers);
-        }        
+        }
 
         const startTime = new Date().getTime();
         let frames = 0;       
@@ -117,6 +132,11 @@ export const bubbleChart = function() {
             if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
                 scatterPlotAxis(ctx, helpers, oldHelpers, animationProgress);
             }
+
+            // todo: no need to redraw thsi on every frame
+            if (config.colorBy) {
+                colorLegend(ctx, colorScale);
+            }
             
             frames++;
 
@@ -130,27 +150,51 @@ export const bubbleChart = function() {
         
         function onDrawFinished() {
             oldHelpers.spreadX = { ...helpers.spreadX };
-            oldHelpers.spreadY = { ...helpers.spreadY };
+            oldHelpers.spreadY = { ...helpers.spreadY }; 
+            
             bubbleMap = {};
             bubbles.forEach(d => {
                 bubbleMap[d.id] = d;
             });
         }
 
-        draw();       
+        draw();
+        
+        oldConfig = config;
 
     };
+    
 };
 
+function colorLegend(ctx, colorScale) {
+    ctx.font = '14px Arial';
+    ctx.textAlign = "start"; 
+    Object.entries(colorScale).forEach((c, i) => {
+        ctx.fillStyle = c[1];            
+        ctx.fillRect(25 + i * 100, 5, 10, 10);
+        ctx.fillStyle = '#333';
+        ctx.fillText(c[0], 40 + i * 100, 15);
+    });
+}
+
 function randomPos(data : Bubble[], helpers) : Bubble[] {
-    return data.map((d, i) => mapRandom(i, d, helpers.width, helpers.height));
+    return data.map((d, i) => mapRandom(i, d, helpers));
+}
+
+function mapRandom(i : number, d : Bubble, helpers) : Bubble {
+    const { width, height, margin } = helpers; 
+    return {
+        ...d,
+        x: Math.floor(Math.random()*width) + margin.left,
+        y: Math.floor(Math.random()*height) + margin.top,
+    };
 }
 
 function scatterPlotBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
 
     const { width, height, margin, spreadX, spreadY } = helpers;    
    
-    const axisSize = { left: 60, bottom: 60 };
+    const axisSize = INNER_MARGINS;
 
     const innerWidth = width - axisSize.left;
     const innerHeight = height - axisSize.bottom;
@@ -180,12 +224,12 @@ function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animation
     const { width, height, margin, spreadX, spreadY } = helpers;
     const { spreadX: oldSpreadX, spreadY: oldSpreadY } = oldHelpers;
     
-    const minX = animationProgress * spreadX.min + (1-animationProgress) * oldSpreadX.min;
-    const maxX = animationProgress * spreadX.max + (1-animationProgress) * oldSpreadX.max;
-    const minY = animationProgress * spreadY.min + (1-animationProgress) * oldSpreadY.min;
-    const maxY = animationProgress * spreadY.max + (1-animationProgress) * oldSpreadY.max;
+    const minX = animationProgress * spreadX.min + (1-animationProgress) * (oldSpreadX.min || 0);
+    const maxX = animationProgress * spreadX.max + (1-animationProgress) * (oldSpreadX.max || 0);
+    const minY = animationProgress * spreadY.min + (1-animationProgress) * (oldSpreadY.min || 0);
+    const maxY = animationProgress * spreadY.max + (1-animationProgress) * (oldSpreadY.max || 0);
    
-    const axisSize = { left: 60, bottom: 60 };
+    const axisSize = INNER_MARGINS;
 
     const innerWidth = width - axisSize.left;
     const innerHeight = height - axisSize.bottom;
@@ -198,26 +242,29 @@ function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animation
         return margin.top + innerHeight - (v - minY) / (maxY - minY) * innerHeight;
     }
 
+    const fullHeight = height + margin.top - axisSize.bottom + 30;
+    
+
     // draw helper elements
     ctx.fillStyle = '#333';
-    ctx.fillRect(scaleX(spreadX.min), height, scaleX(spreadX.max) - scaleX(spreadX.min), 1);
-    ctx.fillRect(scaleX(spreadX.q1), height - 1, scaleX(spreadX.q3) - scaleX(spreadX.q1), 3);
+    ctx.fillRect(scaleX(spreadX.min), fullHeight, scaleX(spreadX.max) - scaleX(spreadX.min), 1);
+    ctx.fillRect(scaleX(spreadX.q1), fullHeight - 1, scaleX(spreadX.q3) - scaleX(spreadX.q1), 3);
 
     ctx.fillRect(axisSize.left - 20, scaleY(spreadY.min), 1, scaleY(spreadY.max) - scaleY(spreadY.min));
     ctx.fillRect(axisSize.left - 21, scaleY(spreadY.q1), 3, scaleY(spreadY.q3) - scaleY(spreadY.q1));    
 
     ctx.fillStyle = '#fff';
-    ctx.fillRect(scaleX(spreadX.med)-2, height - 1, 4, 3);
+    ctx.fillRect(scaleX(spreadX.med)-2, fullHeight - 1, 4, 3);
     ctx.fillRect(axisSize.left - 21, scaleY(spreadY.med)-2, 3, 4);
 
     ctx.font = '14px Arial';
     ctx.fillStyle = '#333';
     ctx.textAlign = "center"; 
-    ctx.fillText(spreadX.min, scaleX(spreadX.min), height + 18);
-    ctx.fillText(spreadX.max, scaleX(spreadX.max), height + 18);
-    ctx.fillText(spreadX.q1, scaleX(spreadX.q1), height + 18);
-    ctx.fillText(spreadX.q3, scaleX(spreadX.q3), height + 18);
-    ctx.fillText(spreadX.med, scaleX(spreadX.med), height + 18);
+    ctx.fillText(spreadX.min, scaleX(spreadX.min), fullHeight + 18);
+    ctx.fillText(spreadX.max, scaleX(spreadX.max), fullHeight + 18);
+    ctx.fillText(spreadX.q1, scaleX(spreadX.q1), fullHeight + 18);
+    ctx.fillText(spreadX.q3, scaleX(spreadX.q3), fullHeight + 18);
+    ctx.fillText(spreadX.med, scaleX(spreadX.med), fullHeight + 18);
 
     ctx.textAlign = "end"; 
     ctx.fillText(spreadY.min, axisSize.left - 30, 4 + scaleY(spreadY.min));
@@ -226,14 +273,6 @@ function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animation
     ctx.fillText(spreadY.q3, axisSize.left - 30, 4 + scaleY(spreadY.q3));
     ctx.fillText(spreadY.med, axisSize.left - 30, 4 + scaleY(spreadY.med));
 
-}
-
-function mapRandom(i : number, d : Bubble, width : number, height: number) : Bubble {    
-    return {
-        ...d,
-        x: Math.floor(Math.random()*width),
-        y: Math.floor(Math.random()*height),
-    };
 }
 
 export const getDefaultConfig = function() : ChartConfig {
