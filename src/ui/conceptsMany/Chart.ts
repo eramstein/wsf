@@ -32,7 +32,7 @@ export interface Helpers {
     };
 }
 
-const ANIMATION_DURATION = 1000;
+const ANIMATION_DURATION = 750;
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -50,6 +50,12 @@ export const bubbleChart = function() {
         width: canvas.width - margin.right - margin.left,
         height: canvas.height - margin.top - margin.bottom,
     };
+
+    let oldHelpers = <Helpers>{
+        spreadX: { min: 0, max: 0, med: 0, q1: 0, q3: 0 },
+        spreadY: { min: 0, max: 0, med: 0, q1: 0, q3: 0 },
+    };
+    
 
     this.build = function() {
 
@@ -105,25 +111,30 @@ export const bubbleChart = function() {
                 const old = bubbleMap[d.id] || {x: 0, y: 0};
                 const newX = old.x + (d.x - old.x) * animationProgress;
                 const newY = old.y + (d.y - old.y) * animationProgress;
-                ctx.fillRect(newX, newY, d.width, d.height);
+                ctx.fillRect(newX, newY, d.width, d.height);                
             });
+
+            if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
+                scatterPlotAxis(ctx, helpers, oldHelpers, animationProgress);
+            }
             
             frames++;
+
             if (animationProgress < 1) {
                 window.requestAnimationFrame(draw);
             } else {
-                console.log('frames', frames);
+                console.log('frames', frames, ' ms ', new Date().getTime() - startTime);
                 onDrawFinished();
             }     
         }
         
         function onDrawFinished() {
+            oldHelpers.spreadX = { ...helpers.spreadX };
+            oldHelpers.spreadY = { ...helpers.spreadY };
+            bubbleMap = {};
             bubbles.forEach(d => {
                 bubbleMap[d.id] = d;
             });
-            if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
-                scatterPlotAxis(ctx, helpers);
-            }
         }
 
         draw();       
@@ -164,9 +175,15 @@ function scatterPlotBubbles(bubbles : Bubble[], config : ChartConfig, helpers : 
     return result;
 }
 
-function scatterPlotAxis(ctx, helpers : Helpers) {
+function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number) {
 
     const { width, height, margin, spreadX, spreadY } = helpers;
+    const { spreadX: oldSpreadX, spreadY: oldSpreadY } = oldHelpers;
+    
+    const minX = animationProgress * spreadX.min + (1-animationProgress) * oldSpreadX.min;
+    const maxX = animationProgress * spreadX.max + (1-animationProgress) * oldSpreadX.max;
+    const minY = animationProgress * spreadY.min + (1-animationProgress) * oldSpreadY.min;
+    const maxY = animationProgress * spreadY.max + (1-animationProgress) * oldSpreadY.max;
    
     const axisSize = { left: 60, bottom: 60 };
 
@@ -174,11 +191,11 @@ function scatterPlotAxis(ctx, helpers : Helpers) {
     const innerHeight = height - axisSize.bottom;
 
     function scaleX(v) {
-        return axisSize.left + margin.left + (v - spreadX.min) / (spreadX.max - spreadX.min) * innerWidth;
+        return axisSize.left + margin.left + (v - minX) / (maxX - minX) * innerWidth;
     }
 
     function scaleY(v) {
-        return margin.top + innerHeight - (v - spreadY.min) / (spreadY.max - spreadY.min) * innerHeight;
+        return margin.top + innerHeight - (v - minY) / (maxY - minY) * innerHeight;
     }
 
     // draw helper elements
