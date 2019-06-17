@@ -1,5 +1,5 @@
 import { Attribute, DataType } from "../../model";
-import { getSpreadBy, Spread, Range, getRangeBy } from "../../utils";
+import { getSpread, getSpreadByCategory, Spread, Range, getRangeBy } from "../../utils";
 
 export interface ChartConfig {
     colorBy: string;
@@ -22,6 +22,7 @@ export interface Bubble {
 export interface Helpers {
     spreadX: Spread;
     spreadY: Spread;
+    spreadByCategory: { [key: string] : Spread },
     sizeRange: Range;
     width: number;
     height: number;
@@ -52,7 +53,7 @@ export const bubbleChart = function() {
     
     const margin = { top: 40, right: 20, bottom: 20, left: 20 };
 
-    let bubbleMap : { [key: string] : Bubble } = {};
+    let oldBubblesValues : { [key: string] : Bubble } = {};
 
     const helpers = <Helpers>{
         margin, 
@@ -83,30 +84,40 @@ export const bubbleChart = function() {
         const type2 = attributes[config.posBy2] && attributes[config.posBy2].type;
         const identifier = Object.entries(attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
         let sizeRange;
+        let colorIndex = 0;
+        let bubbles : Bubble[] = [];
 
-        if (type1 === DataType.Numeric) {
-            helpers.spreadX = getSpreadBy(data, config.posBy1);
+        // HELPERS
+        if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
+            helpers.spreadX = getSpread(data, config.posBy1);
+            helpers.spreadY = getSpread(data, config.posBy2);
         }
-        if (type2 === DataType.Numeric) {
-            helpers.spreadY = getSpreadBy(data, config.posBy2);
+        if (type1 === DataType.Numeric && type2 === DataType.Categorical) {
+            helpers.spreadByCategory = getSpreadByCategory(data, config.posBy1, config.posBy2);
         }
+        if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
+            helpers.spreadByCategory = getSpreadByCategory(data, config.posBy2, config.posBy1);
+        }        
+
+        // SIZE - set range
         if (config.sizeBy) {
             helpers.sizeRange = getRangeBy(data, config.sizeBy);
             sizeRange = helpers.sizeRange.max - helpers.sizeRange.min;
         }
-     
-        let bubbles : Bubble[] = [];
         
-        let colorIndex = 0;
+        // COLOR - clear
         if (oldConfig.colorBy !== config.colorBy) {
             colorScale = {};
         }
         
-        bubbles = data.map(d => {            
+        // BUBBLES - init, set color and size
+        bubbles = data.map(d => {
+            // COLOR - set
             if (config.colorBy && !colorScale[d[config.colorBy]]) {
                 colorScale[d[config.colorBy]] = COLORS[colorIndex % COLORS.length];
                 colorIndex++;
             }
+            // SIZE - set
             const size = config.sizeBy ? Math.max(MIN_BUBBLE_SIZE, (d[config.sizeBy] - helpers.sizeRange.min) / sizeRange * MAX_BUBBLE_SIZE) : DEFAULT_BUBBLE_SIZE;
             return {
                 id: d[identifier],
@@ -119,13 +130,23 @@ export const bubbleChart = function() {
             };
         });
 
+        // BUBBLES - set new positions
+        // scatterplot
         if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
             bubbles = scatterPlotBubbles(bubbles, config, helpers);
         }
+        else if (type1 === DataType.Numeric && type2 === DataType.Categorical) {
+            bubbles = boxPlotsBubbles(bubbles, config.posBy1, config.posBy2, helpers);
+        }
+        else if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
+            bubbles = boxPlotsBubbles(bubbles, config.posBy2, config.posBy1, helpers);
+        }
+        // random
         else {
             bubbles = randomPos(bubbles, helpers);
-        }
+        }        
 
+        // ANIMATION - loop function
         const startTime = new Date().getTime();
         let frames = 0;       
 
@@ -135,9 +156,10 @@ export const bubbleChart = function() {
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
+            // tween position and size
             bubbles.forEach(d => {
                 ctx.fillStyle = d.color;
-                const old = bubbleMap[d.id] || {x: 0, y: 0, width: DEFAULT_BUBBLE_SIZE, height: DEFAULT_BUBBLE_SIZE};
+                const old = oldBubblesValues[d.id] || {x: 0, y: 0, width: DEFAULT_BUBBLE_SIZE, height: DEFAULT_BUBBLE_SIZE};
                 const newX = old.x + (d.x - old.x) * animationProgress;
                 const newY = old.y + (d.y - old.y) * animationProgress;
                 const newW = old.width + (d.width - old.width) * animationProgress;
@@ -145,11 +167,16 @@ export const bubbleChart = function() {
                 ctx.fillRect(newX, newY, newW, newH);                
             });
 
+            // tween helpers
             if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
                 scatterPlotAxis(ctx, helpers, oldHelpers, animationProgress);
+            } else if (type1 === DataType.Numeric && type2 === DataType.Categorical ||
+                type1 === DataType.Categorical && type2 === DataType.Numeric
+            ) {
+                boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress);
             }
 
-            // todo: no need to redraw this on every frame
+            // legend (TODO: no need to redraw this on every frame)
             if (config.colorBy) {
                 colorLegend(ctx, colorScale);
             }
@@ -164,16 +191,19 @@ export const bubbleChart = function() {
             }     
         }
         
+        // ANIMATION - on end of animation, memorize previous values
         function onDrawFinished() {
             oldHelpers.spreadX = { ...helpers.spreadX };
-            oldHelpers.spreadY = { ...helpers.spreadY }; 
+            oldHelpers.spreadY = { ...helpers.spreadY };
+            oldHelpers.spreadByCategory = { ...helpers.spreadByCategory }; 
             
-            bubbleMap = {};
+            oldBubblesValues = {};
             bubbles.forEach(d => {
-                bubbleMap[d.id] = d;
+                oldBubblesValues[d.id] = d;
             });
         }
 
+        // ANIMATION - start loop
         draw();
         
         oldConfig = config;
@@ -288,6 +318,104 @@ function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animation
     ctx.fillText(spreadY.q1, axisSize.left - 30, 4 + scaleY(spreadY.q1));
     ctx.fillText(spreadY.q3, axisSize.left - 30, 4 + scaleY(spreadY.q3));
     ctx.fillText(spreadY.med, axisSize.left - 30, 4 + scaleY(spreadY.med));
+
+}
+
+function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : string, helpers : Helpers) : Bubble[] {
+
+    const { width, height, margin, spreadByCategory } = helpers;
+
+    const axisSize = INNER_MARGINS;
+    const innerHeight = height - axisSize.bottom;
+
+    const categoryCount = Object.values(spreadByCategory).length;
+    const categoryConfig = {};
+    
+    Object.keys(spreadByCategory).sort().forEach((c, i) => { 
+        categoryConfig[c] = { label: c, order: i }; 
+    });    
+
+    let lowest = Number.POSITIVE_INFINITY;
+    let highest = Number.NEGATIVE_INFINITY;
+    
+    Object.values(spreadByCategory).forEach(spread => {
+        if (spread.min < lowest) { lowest = spread.min };
+        if (spread.max > highest) { highest = spread.max };
+    });    
+   
+    function scaleX(category) {
+        return axisSize.left + margin.left + categoryConfig[category].order * (width / categoryCount);
+    }
+
+    function scaleY(v) {
+        return margin.top + innerHeight - (v - lowest) / (highest - lowest) * innerHeight;
+    }    
+
+    // get new bubble positions
+    const result = bubbles.map((d, i) => {
+        return {
+            ...d,
+            x: scaleX(d.data[categorizeBy]) - d.width/2,
+            y: scaleY(d.data[spreadBy]) - d.height/2,
+        }
+    });    
+
+    return result;
+}
+
+function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number) {
+
+    // const { width, height, margin, spreadX, spreadY } = helpers;
+    // const { spreadX: oldSpreadX, spreadY: oldSpreadY } = oldHelpers;
+    
+    // const minX = animationProgress * spreadX.min + (1-animationProgress) * (oldSpreadX.min || 0);
+    // const maxX = animationProgress * spreadX.max + (1-animationProgress) * (oldSpreadX.max || 0);
+    // const minY = animationProgress * spreadY.min + (1-animationProgress) * (oldSpreadY.min || 0);
+    // const maxY = animationProgress * spreadY.max + (1-animationProgress) * (oldSpreadY.max || 0);
+   
+    // const axisSize = INNER_MARGINS;
+
+    // const innerWidth = width - axisSize.left;
+    // const innerHeight = height - axisSize.bottom;
+
+    // function scaleX(v) {
+    //     return axisSize.left + margin.left + (v - minX) / (maxX - minX) * innerWidth;
+    // }
+
+    // function scaleY(v) {
+    //     return margin.top + innerHeight - (v - minY) / (maxY - minY) * innerHeight;
+    // }
+
+    // const fullHeight = height + margin.top - axisSize.bottom + 30;
+    
+
+    // // draw helper elements
+    // ctx.fillStyle = '#333';
+    // ctx.fillRect(scaleX(spreadX.min), fullHeight, scaleX(spreadX.max) - scaleX(spreadX.min), 1);
+    // ctx.fillRect(scaleX(spreadX.q1), fullHeight - 1, scaleX(spreadX.q3) - scaleX(spreadX.q1), 3);
+
+    // ctx.fillRect(axisSize.left - 20, scaleY(spreadY.min), 1, scaleY(spreadY.max) - scaleY(spreadY.min));
+    // ctx.fillRect(axisSize.left - 21, scaleY(spreadY.q1), 3, scaleY(spreadY.q3) - scaleY(spreadY.q1));    
+
+    // ctx.fillStyle = '#fff';
+    // ctx.fillRect(scaleX(spreadX.med)-2, fullHeight - 1, 4, 3);
+    // ctx.fillRect(axisSize.left - 21, scaleY(spreadY.med)-2, 3, 4);
+
+    // ctx.font = '14px Arial';
+    // ctx.fillStyle = '#333';
+    // ctx.textAlign = "center"; 
+    // ctx.fillText(spreadX.min, scaleX(spreadX.min), fullHeight + 18);
+    // ctx.fillText(spreadX.max, scaleX(spreadX.max), fullHeight + 18);
+    // ctx.fillText(spreadX.q1, scaleX(spreadX.q1), fullHeight + 18);
+    // ctx.fillText(spreadX.q3, scaleX(spreadX.q3), fullHeight + 18);
+    // ctx.fillText(spreadX.med, scaleX(spreadX.med), fullHeight + 18);
+
+    // ctx.textAlign = "end"; 
+    // ctx.fillText(spreadY.min, axisSize.left - 30, 4 + scaleY(spreadY.min));
+    // ctx.fillText(spreadY.max, axisSize.left - 30, 4 + scaleY(spreadY.max));
+    // ctx.fillText(spreadY.q1, axisSize.left - 30, 4 + scaleY(spreadY.q1));
+    // ctx.fillText(spreadY.q3, axisSize.left - 30, 4 + scaleY(spreadY.q3));
+    // ctx.fillText(spreadY.med, axisSize.left - 30, 4 + scaleY(spreadY.med));
 
 }
 

@@ -1,7 +1,7 @@
 import { State } from '../../stores';
 import { get } from "svelte/store";
 import { Concept, FilterConfig, DataType } from "../../model";
-import { Spread, getSpreadBy } from '../../utils';
+import { Spread, getSpread } from '../../utils';
 
 export const FILTER_LABEL_WIDTH = 130;
 export const FILTER_VALUE_WIDTH = 150;
@@ -49,7 +49,7 @@ export function setFiltersData(concept : Concept, items, filters : FilterConfig)
             });
             
             if (attribute.type === DataType.Numeric) {
-                newVal.spread = getSpreadBy(filteredItems, attribute.name);
+                newVal.spread = getSpread(filteredItems, attribute.name);
             }
             if (filteredItems.length > 0 && attribute.type === DataType.Categorical) {
                 const categories : { [key: string] : number } = filteredItems.reduce((agg, item) => {
