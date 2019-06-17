@@ -1,5 +1,5 @@
 import { Attribute, DataType } from "../../model";
-import { getSpreadBy, Spread } from "../../utils";
+import { getSpreadBy, Spread, Range, getRangeBy } from "../../utils";
 
 export interface ChartConfig {
     colorBy: string;
@@ -22,6 +22,7 @@ export interface Bubble {
 export interface Helpers {
     spreadX: Spread;
     spreadY: Spread;
+    sizeRange: Range;
     width: number;
     height: number;
     margin: {
@@ -38,6 +39,9 @@ const INNER_MARGINS = {
     bottom: 70,
 };
 const COLORS = ['#0366d6', '#ff7f00', '#25a221', '#d8281f', '#9563bf', '#8d5549', '#e574c4', '#7f7f7f', '#bcbe00', '#00bed0', '#1c9e77', '#da5f03', '#756fb3', '#e8298a', '#66a61e', '#e7ab01', '#a6751e'];
+const MIN_BUBBLE_SIZE = 1;
+const MAX_BUBBLE_SIZE = 50;
+const DEFAULT_BUBBLE_SIZE = 10;
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -73,37 +77,47 @@ export const bubbleChart = function() {
     this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
         console.log('UPDATE CHART');
 
-        helpers.spreadX = getSpreadBy(data, config.posBy1);
-        helpers.spreadY = getSpreadBy(data, config.posBy2);          
-
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        
+
         const type1 = attributes[config.posBy1] && attributes[config.posBy1].type;
         const type2 = attributes[config.posBy2] && attributes[config.posBy2].type;
         const identifier = Object.entries(attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
+        let sizeRange;
 
+        if (type1 === DataType.Numeric) {
+            helpers.spreadX = getSpreadBy(data, config.posBy1);
+        }
+        if (type2 === DataType.Numeric) {
+            helpers.spreadY = getSpreadBy(data, config.posBy2);
+        }
+        if (config.sizeBy) {
+            helpers.sizeRange = getRangeBy(data, config.sizeBy);
+            sizeRange = helpers.sizeRange.max - helpers.sizeRange.min;
+        }
+     
         let bubbles : Bubble[] = [];
         
         let colorIndex = 0;
         if (oldConfig.colorBy !== config.colorBy) {
             colorScale = {};
         }
-
+        
         bubbles = data.map(d => {            
             if (config.colorBy && !colorScale[d[config.colorBy]]) {
                 colorScale[d[config.colorBy]] = COLORS[colorIndex % COLORS.length];
                 colorIndex++;
             }
+            const size = config.sizeBy ? Math.max(MIN_BUBBLE_SIZE, (d[config.sizeBy] - helpers.sizeRange.min) / sizeRange * MAX_BUBBLE_SIZE) : DEFAULT_BUBBLE_SIZE;
             return {
                 id: d[identifier],
                 x: 0,
                 y: 0,
                 data: d,
                 color: config.colorBy ? colorScale[d[config.colorBy]] : 'rgba(70, 130, 180, 1)',
-                width: 10,
-                height: 10,
+                width: size,
+                height: size,
             };
-        });        
+        });
 
         if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
             bubbles = scatterPlotBubbles(bubbles, config, helpers);
@@ -123,17 +137,19 @@ export const bubbleChart = function() {
             
             bubbles.forEach(d => {
                 ctx.fillStyle = d.color;
-                const old = bubbleMap[d.id] || {x: 0, y: 0};
+                const old = bubbleMap[d.id] || {x: 0, y: 0, width: DEFAULT_BUBBLE_SIZE, height: DEFAULT_BUBBLE_SIZE};
                 const newX = old.x + (d.x - old.x) * animationProgress;
                 const newY = old.y + (d.y - old.y) * animationProgress;
-                ctx.fillRect(newX, newY, d.width, d.height);                
+                const newW = old.width + (d.width - old.width) * animationProgress;
+                const newH = old.height + (d.height - old.height) * animationProgress;
+                ctx.fillRect(newX, newY, newW, newH);                
             });
 
             if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
                 scatterPlotAxis(ctx, helpers, oldHelpers, animationProgress);
             }
 
-            // todo: no need to redraw thsi on every frame
+            // todo: no need to redraw this on every frame
             if (config.colorBy) {
                 colorLegend(ctx, colorScale);
             }

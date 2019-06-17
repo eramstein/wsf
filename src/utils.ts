@@ -6,6 +6,11 @@ export interface Spread {
     q3: number;
 }
 
+export interface Range {
+    min: number;
+    max: number;
+}
+
 export function getSpreadBy(vals : [any], attr : string) : Spread {
     const sortedItems = vals.filter(a => a[attr] !== null).sort((a, b) => a[attr] - b[attr]);             
     if (sortedItems.length > 0) {
@@ -23,5 +28,20 @@ export function getSpreadBy(vals : [any], attr : string) : Spread {
         med: 0,
         q1: 0,
         q3: 0,
+    };
+}
+
+export function getRangeBy(vals : [any], attr : string) : Range {
+    let lowest = Number.POSITIVE_INFINITY;
+    let highest = Number.NEGATIVE_INFINITY;
+    let tmp;
+    for (var i=vals.length-1; i>=0; i--) {
+        tmp = vals[i][attr];
+        if (tmp < lowest) lowest = tmp;
+        if (tmp > highest) highest = tmp;
+    }
+    return {
+        max: highest,
+        min: lowest,
     };
 }
