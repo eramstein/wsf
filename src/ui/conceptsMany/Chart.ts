@@ -39,7 +39,7 @@ const INNER_MARGINS = {
     left: 100,
     bottom: 70,
 };
-const COLORS = ['#0366d6', '#ff7f00', '#25a221', '#d8281f', '#9563bf', '#8d5549', '#e574c4', '#7f7f7f', '#bcbe00', '#00bed0', '#1c9e77', '#da5f03', '#756fb3', '#e8298a', '#66a61e', '#e7ab01', '#a6751e'];
+const COLORS = ['rgba(3, 102, 214, 0.5)', 'rgba(255, 127, 0, 0.75)', 'rgba(37, 162, 33, 0.75)', 'rgba(216, 40, 31, 0.75)', 'rgba(149, 99, 191, 0.75)', 'rgba(141, 85, 73, 0.75)', 'rgba(229, 116, 196, 0.75)', 'rgba(127, 127, 127, 0.75)', 'rgba(188, 190, 0, 0.75)', 'rgba(0, 190, 208, 0.75)', 'rgba(28, 158, 119, 0.75)', 'rgba(218, 95, 3, 0.75)', 'rgba(117, 111, 179, 0.75)', 'rgba(232, 41, 138, 0.75)', 'rgba(102, 166, 30, 0.75)', 'rgba(231, 171, 1, 0.75)', 'rgba(166, 117, 30, 0.75)'];
 const MIN_BUBBLE_SIZE = 1;
 const MAX_BUBBLE_SIZE = 50;
 const DEFAULT_BUBBLE_SIZE = 10;
@@ -170,10 +170,12 @@ export const bubbleChart = function() {
             // tween helpers
             if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
                 scatterPlotAxis(ctx, helpers, oldHelpers, animationProgress);
-            } else if (type1 === DataType.Numeric && type2 === DataType.Categorical ||
-                type1 === DataType.Categorical && type2 === DataType.Numeric
-            ) {
-                boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress);
+            }
+            else if (type1 === DataType.Numeric && type2 === DataType.Categorical) {
+                boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress, config.posBy1, config.posBy2);
+            }
+            else if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
+                boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress, config.posBy2, config.posBy1);
             }
 
             // legend (TODO: no need to redraw this on every frame)
@@ -341,9 +343,9 @@ function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : s
     Object.values(spreadByCategory).forEach(spread => {
         if (spread.min < lowest) { lowest = spread.min };
         if (spread.max > highest) { highest = spread.max };
-    });    
+    });
    
-    function scaleX(category) {
+    function scaleX(category, value) {
         return axisSize.left + margin.left + categoryConfig[category].order * (width / categoryCount);
     }
 
@@ -355,67 +357,83 @@ function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : s
     const result = bubbles.map((d, i) => {
         return {
             ...d,
-            x: scaleX(d.data[categorizeBy]) - d.width/2,
+            x: scaleX(d.data[categorizeBy], d.data[spreadBy]) - d.width/2,
             y: scaleY(d.data[spreadBy]) - d.height/2,
         }
-    });    
+    });  
 
     return result;
 }
 
-function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number) {
+function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number, spreadBy : string, categorizeBy : string) {
+    const { width, height, margin, spreadByCategory } = helpers;
 
-    // const { width, height, margin, spreadX, spreadY } = helpers;
-    // const { spreadX: oldSpreadX, spreadY: oldSpreadY } = oldHelpers;
+    const axisSize = INNER_MARGINS;
+    const innerHeight = height - axisSize.bottom;
+
+    const categoryCount = Object.values(spreadByCategory).length;
+    const categoryConfig = {};
     
-    // const minX = animationProgress * spreadX.min + (1-animationProgress) * (oldSpreadX.min || 0);
-    // const maxX = animationProgress * spreadX.max + (1-animationProgress) * (oldSpreadX.max || 0);
-    // const minY = animationProgress * spreadY.min + (1-animationProgress) * (oldSpreadY.min || 0);
-    // const maxY = animationProgress * spreadY.max + (1-animationProgress) * (oldSpreadY.max || 0);
+    Object.keys(spreadByCategory).sort().forEach((c, i) => { 
+        categoryConfig[c] = { label: c, order: i }; 
+    });    
+
+    let lowest = Number.POSITIVE_INFINITY;
+    let highest = Number.NEGATIVE_INFINITY;
+    
+    Object.values(spreadByCategory).forEach(spread => {
+        if (spread.min < lowest) { lowest = spread.min };
+        if (spread.max > highest) { highest = spread.max };
+    });
+
+    // TODO: doesn't have to be recomputed each frame
+    const oldSpread = oldHelpers.spreadByCategory;
+    let oldLowest = Number.POSITIVE_INFINITY;
+    let oldHighest = Number.NEGATIVE_INFINITY;
+    
+    if (oldSpread) {
+        Object.values(oldSpread).forEach(spread => {
+            if (spread.min < oldLowest) { oldLowest = spread.min };
+            if (spread.max > oldHighest) { oldHighest = spread.max };
+        });
+    } else {
+        oldLowest = oldHighest = null;
+    }   
+
+    const min = animationProgress * lowest + (1-animationProgress) * (oldLowest || 0);
+    const max = animationProgress * highest + (1-animationProgress) * (oldHighest || 0);
    
-    // const axisSize = INNER_MARGINS;
+    function scaleX(category) {
+        return Math.floor(axisSize.left + margin.left + categoryConfig[category].order * (width / categoryCount));
+    }
 
-    // const innerWidth = width - axisSize.left;
-    // const innerHeight = height - axisSize.bottom;
+    function scaleY(v) {
+        return margin.top + innerHeight - (v - min) / (max - min) * innerHeight;
+    }
 
-    // function scaleX(v) {
-    //     return axisSize.left + margin.left + (v - minX) / (maxX - minX) * innerWidth;
-    // }
+    Object.entries(spreadByCategory).forEach(category => {
+        const name = category[0];
+        const spread = category[1];
 
-    // function scaleY(v) {
-    //     return margin.top + innerHeight - (v - minY) / (maxY - minY) * innerHeight;
-    // }
+        ctx.fillStyle = '#555';
+        ctx.fillRect(scaleX(name) - 20, scaleY(spread.min), 1, scaleY(spread.max) - scaleY(spread.min));
+        ctx.fillRect(scaleX(name) - 22, scaleY(spread.q1), 5, scaleY(spread.q3) - scaleY(spread.q1));    
 
-    // const fullHeight = height + margin.top - axisSize.bottom + 30;
-    
+        ctx.fillStyle = '#fff';
+        ctx.fillRect(scaleX(name) - 23, scaleY(spread.med)-2, 7, 3);
 
-    // // draw helper elements
-    // ctx.fillStyle = '#333';
-    // ctx.fillRect(scaleX(spreadX.min), fullHeight, scaleX(spreadX.max) - scaleX(spreadX.min), 1);
-    // ctx.fillRect(scaleX(spreadX.q1), fullHeight - 1, scaleX(spreadX.q3) - scaleX(spreadX.q1), 3);
+        ctx.font = '14px Arial';
+        ctx.fillStyle = '#333';
+        ctx.textAlign = "end"; 
+        ctx.fillText(spread.min, scaleX(name) - 30, 4 + scaleY(spread.min));
+        ctx.fillText(spread.max, scaleX(name) - 30, 4 + scaleY(spread.max));
+        ctx.fillText(spread.q1, scaleX(name) - 30, 4 + scaleY(spread.q1));
+        ctx.fillText(spread.q3, scaleX(name) - 30, 4 + scaleY(spread.q3));
+        ctx.fillText(spread.med, scaleX(name) - 30, 4 + scaleY(spread.med));
 
-    // ctx.fillRect(axisSize.left - 20, scaleY(spreadY.min), 1, scaleY(spreadY.max) - scaleY(spreadY.min));
-    // ctx.fillRect(axisSize.left - 21, scaleY(spreadY.q1), 3, scaleY(spreadY.q3) - scaleY(spreadY.q1));    
-
-    // ctx.fillStyle = '#fff';
-    // ctx.fillRect(scaleX(spreadX.med)-2, fullHeight - 1, 4, 3);
-    // ctx.fillRect(axisSize.left - 21, scaleY(spreadY.med)-2, 3, 4);
-
-    // ctx.font = '14px Arial';
-    // ctx.fillStyle = '#333';
-    // ctx.textAlign = "center"; 
-    // ctx.fillText(spreadX.min, scaleX(spreadX.min), fullHeight + 18);
-    // ctx.fillText(spreadX.max, scaleX(spreadX.max), fullHeight + 18);
-    // ctx.fillText(spreadX.q1, scaleX(spreadX.q1), fullHeight + 18);
-    // ctx.fillText(spreadX.q3, scaleX(spreadX.q3), fullHeight + 18);
-    // ctx.fillText(spreadX.med, scaleX(spreadX.med), fullHeight + 18);
-
-    // ctx.textAlign = "end"; 
-    // ctx.fillText(spreadY.min, axisSize.left - 30, 4 + scaleY(spreadY.min));
-    // ctx.fillText(spreadY.max, axisSize.left - 30, 4 + scaleY(spreadY.max));
-    // ctx.fillText(spreadY.q1, axisSize.left - 30, 4 + scaleY(spreadY.q1));
-    // ctx.fillText(spreadY.q3, axisSize.left - 30, 4 + scaleY(spreadY.q3));
-    // ctx.fillText(spreadY.med, axisSize.left - 30, 4 + scaleY(spreadY.med));
+        ctx.textAlign = "center"; 
+        ctx.fillText(name, scaleX(name) - 15, height);
+    });
 
 }
 
