@@ -85,3 +85,7 @@ export function getRangeBy(vals : [any], attr : string) : Range {
         min: lowest,
     };
 }
+
+export function getUniqueValues(vals, attr) {
+    return Array.from(new Set(vals.map(v => v[attr])));
+}

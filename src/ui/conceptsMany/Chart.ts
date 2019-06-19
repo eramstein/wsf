@@ -1,5 +1,5 @@
 import { Attribute, DataType } from "../../model";
-import { getSpread, getSpreadByCategory, Spread, Range, getRangeBy } from "../../utils";
+import { getSpread, getSpreadByCategory, Spread, Range, getRangeBy, getUniqueValues } from "../../utils";
 
 export interface ChartConfig {
     colorBy: string;
@@ -19,6 +19,16 @@ export interface Bubble {
     data: {any};
 }
 
+export interface Plate {
+    xPos: number;
+    yPos: number;
+    xLabel: string;
+    yLabel: string;
+    weight: number;
+    width: number;
+    height: number;
+}
+
 export interface Helpers {
     spreadX: Spread;
     spreadY: Spread;
@@ -26,6 +36,7 @@ export interface Helpers {
     sizeRange: Range;
     width: number;
     height: number;
+    plates: { [key: string] : Plate };    
     margin: {
         top: number,
         bottom: number,
@@ -35,9 +46,13 @@ export interface Helpers {
 }
 
 const ANIMATION_DURATION = 750;
-const INNER_MARGINS = {
+const INNER_MARGINS_BOXPLOTS = {
     left: 100,
     bottom: 70,
+};
+const INNER_MARGINS_PLATES = {
+    left: 150,
+    bottom: 30,
 };
 const COLORS = ['rgba(3, 102, 214, 0.5)', 'rgba(255, 127, 0, 0.75)', 'rgba(37, 162, 33, 0.75)', 'rgba(216, 40, 31, 0.75)', 'rgba(149, 99, 191, 0.75)', 'rgba(141, 85, 73, 0.75)', 'rgba(229, 116, 196, 0.75)', 'rgba(127, 127, 127, 0.75)', 'rgba(188, 190, 0, 0.75)', 'rgba(0, 190, 208, 0.75)', 'rgba(28, 158, 119, 0.75)', 'rgba(218, 95, 3, 0.75)', 'rgba(117, 111, 179, 0.75)', 'rgba(232, 41, 138, 0.75)', 'rgba(102, 166, 30, 0.75)', 'rgba(231, 171, 1, 0.75)', 'rgba(166, 117, 30, 0.75)'];
 const MIN_BUBBLE_SIZE = 1;
@@ -97,7 +112,10 @@ export const bubbleChart = function() {
         }
         if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
             helpers.spreadByCategory = getSpreadByCategory(data, config.posBy2, config.posBy1);
-        }        
+        }
+        if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+            helpers.plates = getPlatesHelpers(data, config, helpers);
+        }
 
         // SIZE - set range
         if (config.sizeBy) {
@@ -106,9 +124,7 @@ export const bubbleChart = function() {
         }
         
         // COLOR - clear
-        if (oldConfig.colorBy !== config.colorBy) {
-            colorScale = {};
-        }
+        colorScale = {};
         
         // BUBBLES - init, set color and size
         bubbles = data.map(d => {
@@ -117,8 +133,12 @@ export const bubbleChart = function() {
                 colorScale[d[config.colorBy]] = COLORS[colorIndex % COLORS.length];
                 colorIndex++;
             }
-            // SIZE - set
-            const size = config.sizeBy ? Math.max(MIN_BUBBLE_SIZE, (d[config.sizeBy] - helpers.sizeRange.min) / sizeRange * MAX_BUBBLE_SIZE) : DEFAULT_BUBBLE_SIZE;
+            // SIZE - set (square root used to keep the area proportionnal to the value)
+            const size = config.sizeBy ?
+                Math.max(MIN_BUBBLE_SIZE,
+                    Math.sqrt(((d[config.sizeBy] - helpers.sizeRange.min) / sizeRange) * Math.pow(MAX_BUBBLE_SIZE, 2)) 
+                )
+                : DEFAULT_BUBBLE_SIZE;
             return {
                 id: d[identifier],
                 x: 0,
@@ -135,11 +155,16 @@ export const bubbleChart = function() {
         if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
             bubbles = scatterPlotBubbles(bubbles, config, helpers);
         }
+        // boxplot
         else if (type1 === DataType.Numeric && type2 === DataType.Categorical) {
             bubbles = boxPlotsBubbles(bubbles, config.posBy1, config.posBy2, helpers);
         }
         else if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
             bubbles = boxPlotsBubbles(bubbles, config.posBy2, config.posBy1, helpers);
+        }
+        // plates
+        else if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+            bubbles = platesBubbles(bubbles, config, helpers);
         }
         // random
         else {
@@ -177,11 +202,15 @@ export const bubbleChart = function() {
             else if (type1 === DataType.Categorical && type2 === DataType.Numeric) {
                 boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress, config.posBy2, config.posBy1);
             }
+            else if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+                platesAxis(ctx, helpers);
+            }
 
             // legend (TODO: no need to redraw this on every frame)
             if (config.colorBy) {
                 colorLegend(ctx, colorScale);
             }
+            
             
             frames++;
 
@@ -193,7 +222,9 @@ export const bubbleChart = function() {
             }     
         }
         
-        // ANIMATION - on end of animation, memorize previous values
+        // ANIMATION - on end of animation:
+        // - memorize previous values
+        // - draw helpers we want to hide during the animation
         function onDrawFinished() {
             oldHelpers.spreadX = { ...helpers.spreadX };
             oldHelpers.spreadY = { ...helpers.spreadY };
@@ -202,7 +233,7 @@ export const bubbleChart = function() {
             oldBubblesValues = {};
             bubbles.forEach(d => {
                 oldBubblesValues[d.id] = d;
-            });
+            });            
         }
 
         // ANIMATION - start loop
@@ -238,11 +269,112 @@ function mapRandom(i : number, d : Bubble, helpers) : Bubble {
     };
 }
 
+function platesBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
+
+    const { plates } = helpers;
+
+    const result = bubbles.map((d, i) => {
+        const plate = plates[d.data[config.posBy1] + d.data[config.posBy2]];
+        return {
+            ...d,
+            x: plate.xPos,
+            y: plate.yPos,
+        }
+    });
+
+    return result;
+}
+
+function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers) : { [key: string] : Plate } {
+
+    const { width, height, margin } = helpers;
+    
+    const axisSize = INNER_MARGINS_PLATES;
+    const fullWidth = width + margin.left + margin.right;
+    const innerWidth = fullWidth - axisSize.left;
+    const innerHeight = height - axisSize.bottom;    
+
+    const plates : { [key: string] : Plate } = {};
+    const xCategories = {};
+    const yCategories = {};
+
+    data.forEach(d => {
+        const name = d[config.posBy1] + d[config.posBy2];
+        if (!plates[name]) {
+            plates[name] = {
+                xPos: 0,
+                yPos: 0,
+                xLabel: d[config.posBy1],
+                yLabel: d[config.posBy2],
+                weight: 0,
+                width: 0,
+                height: 0,
+            }
+        }
+        if (config.sizeBy) {
+            plates[name].weight += d[config.posBy1];
+        } else {
+            plates[name].weight++;
+        }
+    });
+    Object.values(plates).forEach(p => {
+        if (xCategories[p.xLabel] === undefined) {
+            xCategories[p.xLabel] = Object.values(xCategories).length;
+        }
+        if (yCategories[p.yLabel] === undefined) {
+            yCategories[p.yLabel] = Object.values(yCategories).length;
+        }
+        p.xPos = xCategories[p.xLabel];
+        p.yPos = yCategories[p.yLabel];
+    });
+
+    const plateHeight = innerHeight / Object.values(yCategories).length;
+    const plateWidth = innerWidth / Object.values(xCategories).length;
+
+    Object.values(plates).forEach(p => {
+        p.xPos = axisSize.left + p.xPos * plateWidth;
+        p.yPos = margin.top + p.yPos * plateHeight;
+        p.width = plateWidth;
+        p.height = plateHeight;
+    });
+
+    console.log(plates);
+    
+    return plates;
+}
+
+function platesAxis(ctx, helpers : Helpers) {
+    const { width, height, margin, plates } = helpers;
+    const axisSize = INNER_MARGINS_PLATES;
+    const xLabels = {};
+    const yLabels = {};
+    
+    ctx.fillStyle = '#333';
+    ctx.font = '14px Arial';
+    ctx.textAlign = 'center';
+    
+    Object.values(plates).forEach(p => {
+        ctx.fillRect(p.xPos, p.yPos, p.width, 1);        
+        ctx.fillRect(p.xPos, p.yPos, 1, p.height);
+        if (!yLabels[p.yLabel]) {                        
+            ctx.fillText(p.yLabel, axisSize.left / 2, p.yPos + p.height / 2);
+            yLabels[p.yLabel] = true;
+        }  
+        if (!xLabels[p.xLabel]) {                        
+            ctx.fillText(p.xLabel, p.xPos + p.width / 2, height + margin.top);
+            xLabels[p.xLabel] = true;
+        }        
+    });
+
+    // TODO: last horizontal line, brittle because it doesn't re-use plates data
+    ctx.fillRect(axisSize.left, height + margin.top - axisSize.bottom, width, 1);
+}
+
 function scatterPlotBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
 
     const { width, height, margin, spreadX, spreadY } = helpers;    
    
-    const axisSize = INNER_MARGINS;
+    const axisSize = INNER_MARGINS_BOXPLOTS;
 
     const innerWidth = width - axisSize.left;
     const innerHeight = height - axisSize.bottom;
@@ -277,7 +409,7 @@ function scatterPlotAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animation
     const minY = animationProgress * spreadY.min + (1-animationProgress) * (oldSpreadY.min || 0);
     const maxY = animationProgress * spreadY.max + (1-animationProgress) * (oldSpreadY.max || 0);
    
-    const axisSize = INNER_MARGINS;
+    const axisSize = INNER_MARGINS_BOXPLOTS;
 
     const innerWidth = width - axisSize.left;
     const innerHeight = height - axisSize.bottom;
@@ -327,7 +459,7 @@ function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : s
 
     const { width, height, margin, spreadByCategory } = helpers;
 
-    const axisSize = INNER_MARGINS;
+    const axisSize = INNER_MARGINS_BOXPLOTS;
     const innerHeight = height - axisSize.bottom;
 
     const categoryCount = Object.values(spreadByCategory).length;
@@ -368,7 +500,7 @@ function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : s
 function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number, spreadBy : string, categorizeBy : string) {
     const { width, height, margin, spreadByCategory } = helpers;
 
-    const axisSize = INNER_MARGINS;
+    const axisSize = INNER_MARGINS_BOXPLOTS;
     const innerHeight = height - axisSize.bottom;
 
     const categoryCount = Object.values(spreadByCategory).length;
