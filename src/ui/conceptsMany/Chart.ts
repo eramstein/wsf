@@ -1,5 +1,6 @@
 import { Attribute, DataType } from "../../model";
 import { getSpread, getSpreadByCategory, Spread, Range, getRangeBy, getUniqueValues } from "../../utils";
+import { getTreemap, TreemapRect } from "../../logic/treemap";
 
 export interface ChartConfig {
     colorBy: string;
@@ -25,8 +26,10 @@ export interface Plate {
     xLabel: string;
     yLabel: string;
     weight: number;
+    weightRelative: number;
     width: number;
     height: number;
+    leafs: TreemapRect[] | [];
 }
 
 export interface Helpers {
@@ -61,6 +64,7 @@ const DEFAULT_BUBBLE_SIZE = 10;
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
+    // TODO: use webgl (30 FPS with 15K bubbles, acceptable but not great)
     const ctx = canvas.getContext('2d');
     canvas.style.width ='100%';
     canvas.width  = canvas.offsetWidth;
@@ -114,7 +118,10 @@ export const bubbleChart = function() {
             helpers.spreadByCategory = getSpreadByCategory(data, config.posBy2, config.posBy1);
         }
         if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
-            helpers.plates = getPlatesHelpers(data, config, helpers);
+            var t0 = performance.now();
+            helpers.plates = getPlatesHelpers(data, config, helpers, identifier);
+            var t1 = performance.now();
+            console.log("getPlatesHelpers took " + (t1 - t0));
         }
 
         // SIZE - set range
@@ -133,8 +140,9 @@ export const bubbleChart = function() {
                 colorScale[d[config.colorBy]] = COLORS[colorIndex % COLORS.length];
                 colorIndex++;
             }
-            // SIZE - set (square root used to keep the area proportionnal to the value)
-            const size = config.sizeBy ?
+            // SIZE - size bubbles unless it's treemap layout
+            // square root used to keep the area proportionnal to the value)
+            const size = config.sizeBy && (type1 === DataType.Categorical && type2 === DataType.Categorical) ?
                 Math.max(MIN_BUBBLE_SIZE,
                     Math.sqrt(((d[config.sizeBy] - helpers.sizeRange.min) / sizeRange) * Math.pow(MAX_BUBBLE_SIZE, 2)) 
                 )
@@ -250,9 +258,9 @@ function colorLegend(ctx, colorScale) {
     ctx.textAlign = "start"; 
     Object.entries(colorScale).forEach((c, i) => {
         ctx.fillStyle = c[1];            
-        ctx.fillRect(25 + i * 100, 5, 10, 10);
+        ctx.fillRect(25 + i * 120, 5, 10, 10);
         ctx.fillStyle = '#333';
-        ctx.fillText(c[0], 40 + i * 100, 15);
+        ctx.fillText(c[0], 40 + i * 120, 15);
     });
 }
 
@@ -272,31 +280,50 @@ function mapRandom(i : number, d : Bubble, helpers) : Bubble {
 function platesBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
 
     const { plates } = helpers;
+    
+    console.log(plates);    
+
+    const treeMapData = {};
+
+    Object.values(plates).forEach(plate => {
+        const rects = getTreemap(plate.leafs, Math.sqrt(plate.weightRelative) * plate.width, Math.sqrt(plate.weightRelative) * plate.height, plate.weight);        
+        rects.forEach(r => {
+            treeMapData[r.id] = {
+                ...r,
+                x: plate.xPos + r.x,
+                y: plate.yPos + r.y,
+            };
+        });
+    });    
 
     const result = bubbles.map((d, i) => {
-        const plate = plates[d.data[config.posBy1] + d.data[config.posBy2]];
         return {
             ...d,
-            x: plate.xPos,
-            y: plate.yPos,
+            x: treeMapData[d.id].x,
+            y: treeMapData[d.id].y,
+            width: treeMapData[d.id].width,
+            height: treeMapData[d.id].height,
         }
     });
 
     return result;
 }
 
-function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers) : { [key: string] : Plate } {
+function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers, identifier) : { [key: string] : Plate } {
 
     const { width, height, margin } = helpers;
     
     const axisSize = INNER_MARGINS_PLATES;
     const fullWidth = width + margin.left + margin.right;
-    const innerWidth = fullWidth - axisSize.left;
+    const innerWidth = fullWidth - axisSize.left - margin.right;
     const innerHeight = height - axisSize.bottom;    
 
     const plates : { [key: string] : Plate } = {};
     const xCategories = {};
     const yCategories = {};
+    const platesGroups = config.colorBy ? {} : { default: {} };
+
+    let maxWeight = Number.NEGATIVE_INFINITY;
 
     data.forEach(d => {
         const name = d[config.posBy1] + d[config.posBy2];
@@ -307,14 +334,25 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers) : { [key
                 xLabel: d[config.posBy1],
                 yLabel: d[config.posBy2],
                 weight: 0,
+                weightRelative: 0,
                 width: 0,
                 height: 0,
+                leafs: [],
             }
+            platesGroups[name] = {};
         }
         if (config.sizeBy) {
-            plates[name].weight += d[config.posBy1];
+            plates[name].weight += d[config.sizeBy];
         } else {
             plates[name].weight++;
+        }
+        if (config.colorBy) {
+            if (!platesGroups[name][d[config.colorBy]]) {                
+                platesGroups[name][d[config.colorBy]] = [];
+            }
+            platesGroups[name][d[config.colorBy]].push({ id: d[identifier], value: config.sizeBy ? d[config.sizeBy] : 1 });
+        } else {
+            platesGroups[name].default.push({ id: d[identifier] , value: config.sizeBy ? d[config.sizeBy] : 1 });
         }
     });
     Object.values(plates).forEach(p => {
@@ -326,6 +364,18 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers) : { [key
         }
         p.xPos = xCategories[p.xLabel];
         p.yPos = yCategories[p.yLabel];
+        if (p.weight > maxWeight) {
+            maxWeight = p.weight;
+        }
+        // @ts-ignore
+        p.leafs = Object.entries(platesGroups[p.xLabel+p.yLabel]).map(g => {
+            return {
+                id: g[0],
+                // @ts-ignore
+                value: g[1].reduce((agg, curr) => { agg += curr.value; return agg; }, 0),
+                children: g[1],
+            };
+        });
     });
 
     const plateHeight = innerHeight / Object.values(yCategories).length;
@@ -336,10 +386,9 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers) : { [key
         p.yPos = margin.top + p.yPos * plateHeight;
         p.width = plateWidth;
         p.height = plateHeight;
+        p.weightRelative = p.weight / maxWeight;
     });
-
-    console.log(plates);
-    
+   
     return plates;
 }
 
@@ -352,10 +401,12 @@ function platesAxis(ctx, helpers : Helpers) {
     ctx.fillStyle = '#333';
     ctx.font = '14px Arial';
     ctx.textAlign = 'center';
-    
+        
     Object.values(plates).forEach(p => {
-        ctx.fillRect(p.xPos, p.yPos, p.width, 1);        
+        ctx.fillRect(p.xPos, p.yPos, p.width, 1);
+        ctx.fillRect(p.xPos, p.yPos + p.height, p.width, 1);       
         ctx.fillRect(p.xPos, p.yPos, 1, p.height);
+        ctx.fillRect(p.xPos + p.width, p.yPos, 1, p.height);
         if (!yLabels[p.yLabel]) {                        
             ctx.fillText(p.yLabel, axisSize.left / 2, p.yPos + p.height / 2);
             yLabels[p.yLabel] = true;
@@ -365,9 +416,6 @@ function platesAxis(ctx, helpers : Helpers) {
             xLabels[p.xLabel] = true;
         }        
     });
-
-    // TODO: last horizontal line, brittle because it doesn't re-use plates data
-    ctx.fillRect(axisSize.left, height + margin.top - axisSize.bottom, width, 1);
 }
 
 function scatterPlotBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
@@ -541,7 +589,7 @@ function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationPro
 
     function scaleY(v) {
         return margin.top + innerHeight - (v - min) / (max - min) * innerHeight;
-    }
+    }    
 
     Object.entries(spreadByCategory).forEach(category => {
         const name = category[0];
