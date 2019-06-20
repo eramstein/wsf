@@ -122,7 +122,10 @@ export const bubbleChart = function() {
             helpers.spreadByCategory = getSpreadByCategory(data, config.posBy1, null);
         }
         if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+            var t0 = performance.now();
             helpers.plates = getPlatesChartHelpers(data, config, helpers, identifier);
+            var t1 = performance.now();
+            console.log("getPlatesChartHelpers took " + (t1 - t0));
         }
         if (type1 === DataType.Categorical && !type2 || type2 === DataType.Categorical && !type1) {
             // bar charts are in fact a one dimensional plate chart, same code works for both
@@ -301,7 +304,7 @@ function platesBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpe
 
     const treeMapData = {};
 
-    Object.values(plates).forEach(plate => {
+    Object.values(plates).forEach(plate => {        
         const rects = getTreemap(plate.leafs, plate.weightRelative * plate.width, plate.height, plate.weight);        
         rects.forEach(r => {
             treeMapData[r.id] = {
@@ -359,7 +362,7 @@ function getPlatesChartHelpers(data, config: ChartConfig, helpers : Helpers, ide
             }
             platesGroups[name] = config.colorBy ? {} : { default: [] };
         }
-        if (config.sizeBy) {
+        if (config.sizeBy) {            
             plates[name].weight += d[config.sizeBy];
         } else {
             plates[name].weight++;
@@ -373,8 +376,6 @@ function getPlatesChartHelpers(data, config: ChartConfig, helpers : Helpers, ide
             platesGroups[name].default.push({ id: d[identifier] , value: config.sizeBy ? d[config.sizeBy] : 1 });
         }
     });
-
-    console.log(Object.values(plates));
 
     const sorting = isBarChart ? 
         (a, b) => { return b.weight - a.weight }
@@ -407,7 +408,7 @@ function getPlatesChartHelpers(data, config: ChartConfig, helpers : Helpers, ide
 
     const plateHeight = isBarChart ? Math.min(MAX_PLATE_HEIGHT, innerHeight / Object.values(yCategories).length) : innerHeight / Object.values(yCategories).length;
     const plateWidth = innerWidth / Object.values(xCategories).length;
-
+    
     Object.values(plates).sort(sorting).forEach((p, i) => {
         p.xPos = axisSize.left + p.xPos * plateWidth;
         p.yPos = margin.top + p.yPos * plateHeight + (isBarChart ? i : 0);
@@ -576,7 +577,7 @@ function boxPlotsBubbles(bubbles : Bubble[], spreadBy : string, categorizeBy : s
 }
 
 function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationProgress : number, spreadBy : string, categorizeBy : string) {
-    const { width, height, margin, spreadByCategory } = helpers;
+    const { width, height, margin, spreadByCategory } = helpers;      
 
     const axisSize = INNER_MARGINS_BOXPLOTS;
     const innerHeight = height - axisSize.bottom;
@@ -601,14 +602,14 @@ function boxPlotsAxis(ctx, helpers : Helpers, oldHelpers : Helpers, animationPro
     let oldLowest = Number.POSITIVE_INFINITY;
     let oldHighest = Number.NEGATIVE_INFINITY;
     
-    if (oldSpread) {
+    if (oldSpread && oldSpread.min) {
         Object.values(oldSpread).forEach(spread => {
             if (spread.min < oldLowest) { oldLowest = spread.min };
             if (spread.max > oldHighest) { oldHighest = spread.max };
         });
     } else {
         oldLowest = oldHighest = null;
-    }   
+    }    
 
     const min = animationProgress * lowest + (1-animationProgress) * (oldLowest || 0);
     const max = animationProgress * highest + (1-animationProgress) * (oldHighest || 0);
