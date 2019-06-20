@@ -39,7 +39,7 @@ export interface Helpers {
     sizeRange: Range;
     width: number;
     height: number;
-    plates: { [key: string] : Plate };    
+    plates: { [key: string] : Plate };  
     margin: {
         top: number,
         bottom: number,
@@ -61,6 +61,7 @@ const COLORS = ['rgba(3, 102, 214, 0.5)', 'rgba(255, 127, 0, 0.75)', 'rgba(37, 1
 const MIN_BUBBLE_SIZE = 1;
 const MAX_BUBBLE_SIZE = 50;
 const DEFAULT_BUBBLE_SIZE = 10;
+const MAX_PLATE_HEIGHT = 100;
 
 export const bubbleChart = function() {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
@@ -118,10 +119,11 @@ export const bubbleChart = function() {
             helpers.spreadByCategory = getSpreadByCategory(data, config.posBy2, config.posBy1);
         }
         if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
-            var t0 = performance.now();
-            helpers.plates = getPlatesHelpers(data, config, helpers, identifier);
-            var t1 = performance.now();
-            console.log("getPlatesHelpers took " + (t1 - t0));
+            helpers.plates = getPlatesChartHelpers(data, config, helpers, identifier);
+        }
+        if (type1 === DataType.Categorical && !type2 || type2 === DataType.Categorical && !type1) {
+            // bar charts are in fact a one dimensional plate chart, same code works for both
+            helpers.plates = getPlatesChartHelpers(data, config, helpers, identifier);
         }
 
         // SIZE - set range
@@ -142,7 +144,7 @@ export const bubbleChart = function() {
             }
             // SIZE - size bubbles unless it's treemap layout
             // square root used to keep the area proportionnal to the value)
-            const size = config.sizeBy && (type1 === DataType.Categorical && type2 === DataType.Categorical) ?
+            const size = config.sizeBy && !(type1 === DataType.Categorical && type2 === DataType.Categorical) ?
                 Math.max(MIN_BUBBLE_SIZE,
                     Math.sqrt(((d[config.sizeBy] - helpers.sizeRange.min) / sizeRange) * Math.pow(MAX_BUBBLE_SIZE, 2)) 
                 )
@@ -172,6 +174,10 @@ export const bubbleChart = function() {
         }
         // plates
         else if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+            bubbles = platesBubbles(bubbles, config, helpers);
+        }
+        // bars
+        else if (type1 === DataType.Categorical && !type2 || type2 === DataType.Categorical && !type1) {
             bubbles = platesBubbles(bubbles, config, helpers);
         }
         // random
@@ -211,6 +217,9 @@ export const bubbleChart = function() {
                 boxPlotsAxis(ctx, helpers, oldHelpers, animationProgress, config.posBy2, config.posBy1);
             }
             else if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
+                platesAxis(ctx, helpers);
+            }
+            else if (type1 === DataType.Categorical && !type2 || type2 === DataType.Categorical && !type1) {
                 platesAxis(ctx, helpers);
             }
 
@@ -277,16 +286,98 @@ function mapRandom(i : number, d : Bubble, helpers) : Bubble {
     };
 }
 
+// function getBarchartChartHelpers(data, config: ChartConfig, helpers : Helpers, identifier) : { [key: string] : Plate } {
+
+//     const { width, height, margin } = helpers;
+
+//     const posAttributes = config.posBy1 || config.posBy2;
+    
+//     const axisSize = INNER_MARGINS_PLATES;
+//     const fullWidth = width + margin.left + margin.right;
+//     const innerWidth = fullWidth - axisSize.left - margin.right;
+//     const innerHeight = height - axisSize.bottom;    
+
+//     const plates : { [key: string] : Plate } = {};
+//     const yCategories = {};
+//     const platesGroups = {};
+
+//     let maxWeight = Number.NEGATIVE_INFINITY;
+
+//     data.forEach(d => {
+//         const name = d[posAttributes];
+//         if (!plates[name]) {
+//             plates[name] = {
+//                 xPos: 0,
+//                 yPos: 0,
+//                 xLabel: null,
+//                 yLabel: d[posAttributes],
+//                 weight: 0,
+//                 weightRelative: 0,
+//                 width: 0,
+//                 height: 0,
+//                 leafs: [],
+//             }
+//             platesGroups[name] = config.colorBy ? {} : { default: [] };
+//         }
+//         if (config.sizeBy) {
+//             plates[name].weight += d[config.sizeBy];
+//         } else {
+//             plates[name].weight++;
+//         }        
+//         if (config.colorBy) {
+//             if (!platesGroups[name][d[config.colorBy]]) {                
+//                 platesGroups[name][d[config.colorBy]] = [];
+//             }
+//             platesGroups[name][d[config.colorBy]].push({ id: d[identifier], value: config.sizeBy ? d[config.sizeBy] : 1 });
+//         } else {
+//             platesGroups[name].default.push({ id: d[identifier] , value: config.sizeBy ? d[config.sizeBy] : 1 });
+//         }
+//     });
+//     Object.values(plates).forEach(p => {
+//         if (xCategories[p.xLabel] === undefined) {
+//             xCategories[p.xLabel] = Object.values(xCategories).length;
+//         }
+//         if (yCategories[p.yLabel] === undefined) {
+//             yCategories[p.yLabel] = Object.values(yCategories).length;
+//         }
+//         p.xPos = xCategories[p.xLabel];
+//         p.yPos = yCategories[p.yLabel];
+//         if (p.weight > maxWeight) {
+//             maxWeight = p.weight;
+//         }
+//         // @ts-ignore
+//         p.leafs = Object.entries(platesGroups[p.xLabel+p.yLabel]).map(g => {
+//             return {
+//                 id: g[0],
+//                 // @ts-ignore
+//                 value: g[1].reduce((agg, curr) => { agg += curr.value; return agg; }, 0),
+//                 children: g[1],
+//             };
+//         });
+//     });
+
+//     const plateHeight = innerHeight / Object.values(yCategories).length;
+//     const plateWidth = innerWidth / Object.values(xCategories).length;
+
+//     Object.values(plates).forEach(p => {
+//         p.xPos = axisSize.left + p.xPos * plateWidth;
+//         p.yPos = margin.top + p.yPos * plateHeight;
+//         p.width = plateWidth;
+//         p.height = plateHeight;
+//         p.weightRelative = p.weight / maxWeight;
+//     });
+   
+//     return plates;
+// }
+
 function platesBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpers) : Bubble[] {
 
     const { plates } = helpers;
-    
-    console.log(plates);    
 
     const treeMapData = {};
 
     Object.values(plates).forEach(plate => {
-        const rects = getTreemap(plate.leafs, Math.sqrt(plate.weightRelative) * plate.width, Math.sqrt(plate.weightRelative) * plate.height, plate.weight);        
+        const rects = getTreemap(plate.leafs, plate.weightRelative * plate.width, plate.height, plate.weight);        
         rects.forEach(r => {
             treeMapData[r.id] = {
                 ...r,
@@ -309,9 +400,11 @@ function platesBubbles(bubbles : Bubble[], config : ChartConfig, helpers : Helpe
     return result;
 }
 
-function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers, identifier) : { [key: string] : Plate } {
+function getPlatesChartHelpers(data, config: ChartConfig, helpers : Helpers, identifier) : { [key: string] : Plate } {
 
     const { width, height, margin } = helpers;
+
+    const isBarChart = !config.posBy2;
     
     const axisSize = INNER_MARGINS_PLATES;
     const fullWidth = width + margin.left + margin.right;
@@ -321,31 +414,31 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers, identifi
     const plates : { [key: string] : Plate } = {};
     const xCategories = {};
     const yCategories = {};
-    const platesGroups = config.colorBy ? {} : { default: {} };
+    const platesGroups = {};
 
     let maxWeight = Number.NEGATIVE_INFINITY;
 
     data.forEach(d => {
-        const name = d[config.posBy1] + d[config.posBy2];
+        const name = d[config.posBy2] + d[config.posBy1];
         if (!plates[name]) {
             plates[name] = {
                 xPos: 0,
                 yPos: 0,
-                xLabel: d[config.posBy1],
-                yLabel: d[config.posBy2],
+                xLabel: d[config.posBy2],
+                yLabel: d[config.posBy1],
                 weight: 0,
                 weightRelative: 0,
                 width: 0,
                 height: 0,
                 leafs: [],
             }
-            platesGroups[name] = {};
+            platesGroups[name] = config.colorBy ? {} : { default: [] };
         }
         if (config.sizeBy) {
             plates[name].weight += d[config.sizeBy];
         } else {
             plates[name].weight++;
-        }
+        }        
         if (config.colorBy) {
             if (!platesGroups[name][d[config.colorBy]]) {                
                 platesGroups[name][d[config.colorBy]] = [];
@@ -355,7 +448,8 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers, identifi
             platesGroups[name].default.push({ id: d[identifier] , value: config.sizeBy ? d[config.sizeBy] : 1 });
         }
     });
-    Object.values(plates).forEach(p => {
+
+    Object.values(plates).sort((a, b) => b.weight - a.weight).forEach(p => {
         if (xCategories[p.xLabel] === undefined) {
             xCategories[p.xLabel] = Object.values(xCategories).length;
         }
@@ -378,16 +472,16 @@ function getPlatesHelpers(data, config: ChartConfig, helpers : Helpers, identifi
         });
     });
 
-    const plateHeight = innerHeight / Object.values(yCategories).length;
+    const plateHeight = isBarChart ? Math.min(MAX_PLATE_HEIGHT, innerHeight / Object.values(yCategories).length) : innerHeight / Object.values(yCategories).length;
     const plateWidth = innerWidth / Object.values(xCategories).length;
 
-    Object.values(plates).forEach(p => {
+    Object.values(plates).sort((a, b) => b.weight - a.weight).forEach((p, i) => {
         p.xPos = axisSize.left + p.xPos * plateWidth;
-        p.yPos = margin.top + p.yPos * plateHeight;
+        p.yPos = margin.top + p.yPos * plateHeight + (isBarChart ? i : 0);
         p.width = plateWidth;
         p.height = plateHeight;
         p.weightRelative = p.weight / maxWeight;
-    });
+    });    
    
     return plates;
 }
@@ -403,15 +497,18 @@ function platesAxis(ctx, helpers : Helpers) {
     ctx.textAlign = 'center';
         
     Object.values(plates).forEach(p => {
-        ctx.fillRect(p.xPos, p.yPos, p.width, 1);
-        ctx.fillRect(p.xPos, p.yPos + p.height, p.width, 1);       
-        ctx.fillRect(p.xPos, p.yPos, 1, p.height);
-        ctx.fillRect(p.xPos + p.width, p.yPos, 1, p.height);
+        // draw rectangles only for 2 dims plate charts, not simple bars
+        if (p.xLabel) {
+            ctx.fillRect(p.xPos, p.yPos, p.width, 1);
+            ctx.fillRect(p.xPos, p.yPos + p.height, p.width, 1);       
+            ctx.fillRect(p.xPos, p.yPos, 1, p.height);
+            ctx.fillRect(p.xPos + p.width, p.yPos, 1, p.height);
+        }        
         if (!yLabels[p.yLabel]) {                        
             ctx.fillText(p.yLabel, axisSize.left / 2, p.yPos + p.height / 2);
             yLabels[p.yLabel] = true;
         }  
-        if (!xLabels[p.xLabel]) {                        
+        if (p.xLabel && !xLabels[p.xLabel]) {                        
             ctx.fillText(p.xLabel, p.xPos + p.width / 2, height + margin.top);
             xLabels[p.xLabel] = true;
         }        
