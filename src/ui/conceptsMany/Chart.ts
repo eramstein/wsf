@@ -98,7 +98,7 @@ export const bubbleChart = function() {
     this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
         console.log('UPDATE CHART');
 
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvas.width, canvas.height);        
 
         const type1 = attributes[config.posBy1] && attributes[config.posBy1].type;
         const type2 = attributes[config.posBy2] && attributes[config.posBy2].type;
@@ -140,6 +140,12 @@ export const bubbleChart = function() {
         
         // COLOR - clear
         colorScale = {};
+
+        if (config.colorBy) {
+            bubbles.sort((a, b) => a.data[config.colorBy].localeCompare(b.data[config.colorBy]) );
+        } else {
+            bubbles.sort((a, b) => a.data[config.posBy1].localeCompare(b.data[config.posBy1]) );
+        }
         
         // BUBBLES - init, set color and size
         bubbles = data.map(d => {
@@ -165,6 +171,8 @@ export const bubbleChart = function() {
                 height: size,
             };
         });
+
+        const ANIMATION_DELAY = bubbles.length > 1000 ? 750 : 100;
 
         // BUBBLES - set new positions
         // scatterplot
@@ -196,20 +204,23 @@ export const bubbleChart = function() {
 
         // ANIMATION - loop function
         const startTime = new Date().getTime();
-        let frames = 0;       
+        let frames = 0;  
 
         function draw() {
-            const now = new Date().getTime();
-            const animationProgress = Math.min(1, (now - startTime) / ANIMATION_DURATION);
+            const now = new Date().getTime();            
 
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const animationProgress = Math.min(1, (now - startTime) / ANIMATION_DURATION);
+            const delayedProgress = Math.min(1, (now - startTime - ANIMATION_DELAY) / ANIMATION_DURATION);            
             
             // tween position and size
-            bubbles.forEach(d => {
+            bubbles.forEach((d, i) => {
+                const delay = ANIMATION_DELAY * (i / bubbles.length);                
+                const localProgress = Math.min(1, (now - startTime - delay) / ANIMATION_DURATION);
                 ctx.fillStyle = d.color;
                 const old = oldBubblesValues[d.id] || {x: 0, y: 0, width: DEFAULT_BUBBLE_SIZE, height: DEFAULT_BUBBLE_SIZE};
-                const newX = old.x + (d.x - old.x) * animationProgress;
-                const newY = old.y + (d.y - old.y) * animationProgress;
+                const newX = old.x + (d.x - old.x) * localProgress;
+                const newY = old.y + (d.y - old.y) * localProgress;
                 const newW = old.width + (d.width - old.width) * animationProgress;
                 const newH = old.height + (d.height - old.height) * animationProgress;
                 ctx.fillRect(newX, newY, newW, newH);                
@@ -243,7 +254,7 @@ export const bubbleChart = function() {
             
             frames++;
 
-            if (animationProgress < 1) {
+            if (delayedProgress < 1) {
                 window.requestAnimationFrame(draw);
             } else {
                 console.log('frames', frames, ' ms ', new Date().getTime() - startTime);
@@ -255,6 +266,8 @@ export const bubbleChart = function() {
         // - memorize previous values
         // - draw helpers we want to hide during the animation
         function onDrawFinished() {
+            console.log('FINISHED');
+            
             oldHelpers.spreadX = { ...helpers.spreadX };
             oldHelpers.spreadY = { ...helpers.spreadY };
             oldHelpers.spreadByCategory = { ...helpers.spreadByCategory }; 

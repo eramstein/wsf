@@ -22,14 +22,32 @@
     }
     .menu {
         display: flex;
+        height: 100%;
     }
     .menu div {
-        padding-right: 20px;
+        height: 100%;
+        border-left: 1px solid #5c5c5c;
+    }
+    .tab {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        padding: 0px 20px;
+        color: white;
+        cursor: pointer;
+        min-width: 100px;
+        justify-content: center;
+    }
+    .selected, .selected:hover {
+        background-color: #5c5c5c;
+    }
+    .tab:hover {
+        background-color: #4b4b4b;
     }
 </style>
 
 <div class="main-bar">
-    <div style="width: {filtersWidth}px">
+    <div style="width: {filtersWidth-20}px">
         <Link screen={ Screen.Home } params={ null }>
             <div class="home">
                 HOME
@@ -38,16 +56,16 @@
     </div>
     <div class="menu">
         {#if $State.ui.openScreen === Screen.Concept}
-            <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
-                <div class="tab">
+            <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Lists }">
+                <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
                     Lists
-                </div>
-            </Link>
-            <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Charts } }>
-                <div class="tab">
+                </Link>
+            </div>
+            <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Charts }">
+                <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Charts } }>
                     Charts
-                </div>
-            </Link>  
+                </Link>
+            </div>
         {/if}
     </div>
 </div>

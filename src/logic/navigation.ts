@@ -5,7 +5,7 @@ export function mutateStateAfterNavigation(screen : Screen, params, state : Full
     const oldParams = state.ui.screenParameters;
     state.ui.openScreen = screen;
     state.ui.screenParameters = params;
-    if (screen === Screen.Concept && oldParams.concept !== params.concept) {        
+    if (screen === Screen.Concept && oldParams && oldParams.concept !== params.concept) {        
         state.ui.filteredItems = Object.values(state.data.concepts[params.concept].items);
     }    
 }

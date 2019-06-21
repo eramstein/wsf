@@ -97,6 +97,8 @@
         padding: 0px 20px;
         color: white;
         cursor: pointer;
+        min-width: 100px;
+        justify-content: center;
     }
     .selected, .selected:hover {
         background-color: steelblue !important;
@@ -121,6 +123,7 @@
     .add-list {
         font-size: 24px;
         font-weight: bold;
+        min-width: 30px !important;
     }
     .config {
         padding: 10px 20px;
