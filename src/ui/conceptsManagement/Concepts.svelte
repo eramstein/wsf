@@ -1,6 +1,7 @@
 <script>
     import { State } from '../../stores';
     import Link from '../Link.svelte';
+    import Widget from '../Widget.svelte';
     import { Screen, ConceptScreen } from '../../model';
 
     import { csvIntoConcept } from '../../logic/import';
@@ -25,6 +26,26 @@
             reader.readAsText(input.files[0]);
         }
         return false;
+    }
+
+    const dawid = {
+        name: "dawid",
+        concept: "card",
+        template:"<style> div{color:red;}</style><div>hello {{name}}, double is {{doubled}}</div>",
+        script:"(() => { return { doubled: data.power*2 } })()",
+        computedNode:`
+            (() => data => { 
+                const node = document.createElement('div');
+                node.innerHTML='itsa me, ' + data.name;
+                node.onclick=()=>{ alert('ciao'); };
+                return node; 
+            })()
+        `,
+    };
+
+    const data = {
+        name: "Mario",
+        power: 4501,
     }
 
 </script>
@@ -57,6 +78,9 @@
 </style>
 
 <div class="concepts">
+
+    <Widget template={ dawid.template } script={ dawid.script } computedNode={ dawid.computedNode } data={ data } />
+
     <div class="concept" type="file"
         ondragenter="event.stopPropagation(); event.preventDefault();"
         ondragover ="event.stopPropagation(); event.preventDefault();"
