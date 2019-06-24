@@ -28,26 +28,6 @@
         return false;
     }
 
-    const dawid = {
-        name: "dawid",
-        concept: "card",
-        template:"<style> div{color:red;}</style><div>hello {{name}}, double is {{doubled}}</div>",
-        script:"(() => { return { doubled: data.power*2 } })()",
-        computedNode:`
-            (() => data => { 
-                const node = document.createElement('div');
-                node.innerHTML='itsa me, ' + data.name;
-                node.onclick=()=>{ alert('ciao'); };
-                return node; 
-            })()
-        `,
-    };
-
-    const data = {
-        name: "Mario",
-        power: 4501,
-    }
-
 </script>
 
 <style>
@@ -65,8 +45,6 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        grid-column: 1;
-        grid-row: 1;
         border: 1px solid #ccc;
         border-radius: 6px;
         font-size: 100px;
@@ -78,9 +56,6 @@
 </style>
 
 <div class="concepts">
-
-    <Widget template={ dawid.template } script={ dawid.script } computedNode={ dawid.computedNode } data={ data } />
-
     <div class="concept" type="file"
         ondragenter="event.stopPropagation(); event.preventDefault();"
         ondragover ="event.stopPropagation(); event.preventDefault();"
@@ -88,7 +63,7 @@
         +
     </div>
     {#each Object.values(concepts) as concept (concept.name) }
-        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.List } }>
+        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Lists } }>
             <div class="concept">
                 { concept.name }
             </div>

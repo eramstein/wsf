@@ -65,5 +65,6 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
         name,
         items,
         attributes,
+        widgets: { one:{}, many:{} },
     };
 }

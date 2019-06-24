@@ -39,7 +39,7 @@
         justify-content: center;
     }
     .selected, .selected:hover {
-        background-color: #5c5c5c;
+        background-color: rgb(92, 92, 92);
     }
     .tab:hover {
         background-color: #4b4b4b;
@@ -56,16 +56,21 @@
     </div>
     <div class="menu">
         {#if $State.ui.openScreen === Screen.Concept}
-            <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Lists }">
-                <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
-                    Lists
-                </Link>
-            </div>
-            <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Charts }">
-                <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Charts } }>
-                    Charts
-                </Link>
-            </div>
+            <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Lists }">                
+                    Lists                
+                </div>
+            </Link>
+            <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Charts } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Charts }">                
+                    Charts                
+                </div>
+            </Link>
+            <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Cards } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Cards }">                
+                    Cards                
+                </div>
+            </Link>
         {/if}
     </div>
 </div>

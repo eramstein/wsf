@@ -1,4 +1,5 @@
 <script>
+
     /*
         LEVEL 1: simple template
             pass HTML in the template prop. double mustaches like {{ mana_cost }} get replaced with the content of data
@@ -33,20 +34,56 @@
             (or a function to get the data from the database if this is too much deserializing, TBD)
     */
 
+    // const dawid = {
+    //     name: "dawid",
+    //     concept: "card",
+    //     template:"<style> div{color:red;}</style><div><div>hello {{name}}, double is {{doubled}}</div><wsf-subwid1 daname='{{name}}'/></div>",
+    //     script:"(() => { return { doubled: data.power*2 } })()",
+    //     computedNode:`
+    //         (() => data => { 
+    //             const node = document.createElement('div');
+    //             node.innerHTML='itsa me, ' + data.name;
+    //             node.onclick=()=>{ alert('ciao'); };
+    //             return node; 
+    //         })()
+    //     `,
+    // };
 
-    import { onMount } from 'svelte';
+    // const data = {
+    //     name: "Mario",
+    //     power: 4501,
+    // }
+
+    // customElements.define('wsf-subwid1', class extends HTMLElement {
+    //     constructor() {
+    //         super();
+    //         const shadowRoot = this.attachShadow({mode: 'open'});
+    //         console.log(this, this.getAttribute('daname'));
+            
+    //         shadowRoot.innerHTML = '<div><b>sub1</b> - hello again, ' + this.getAttribute('daname') + '</div>';
+    //     }
+    // });
+
+    //<Widget template={ dawid.template } script={ dawid.script } computedNode={ dawid.computedNode } data={ data } />
+
+
+    import { afterUpdate } from 'svelte';
     import { State } from '../stores';
     export let data;
     export let template;
     export let script;
     export let computedNode;
 
-    onMount(() => {
-        console.log('script', script);
-        console.log('template', template);
-        console.log('computedNode', computedNode);
-        
-        let computed = {};
+    let container;
+    let shadowRoot;   
+    
+    afterUpdate(() => {
+
+        if (!shadowRoot) {
+            shadowRoot = container.attachShadow({mode: 'open'});
+        }
+
+		let computed = {};
         let createdNode;
         let filledTemplate;
 
@@ -54,6 +91,7 @@
             computed = eval(script);
         }
         if (computedNode) {
+            //TO TEST: can the computed node code use State.get() ? instead of passing all data, just an ID
             createdNode = eval(computedNode)(data);
         } else {
             const allData = { ...data, ...computed };
@@ -61,10 +99,8 @@
                 return allData[p1];                
             }        
             filledTemplate = template.replace(/{{(.+?)}}/g, replacer);
-        }
-            
-        const me = document.getElementById('itsame');
-        const shadowRoot = me.attachShadow({mode: 'open'});
+        }        
+        
         if (computedNode) {
             shadowRoot.appendChild(createdNode);
         } else {
@@ -75,5 +111,5 @@
 
 </script>
 
-<div id="itsame">
+<div bind:this={container}>
 </div>

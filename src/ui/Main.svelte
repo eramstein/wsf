@@ -5,6 +5,7 @@
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
     import Chart from './conceptsMany/Chart.svelte';
+    import Cards from './conceptsMany/Cards.svelte';
     import Filters from './conceptsMany/Filters.svelte';
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
@@ -58,7 +59,9 @@
                 <div class="contents">
                     {#if $State.ui.screenParameters.widget === ConceptScreen.Lists}
                         <List />
-                    {:else}
+                    {:else if $State.ui.screenParameters.widget === ConceptScreen.Cards}
+                        <Cards />
+                    {:else if $State.ui.screenParameters.widget === ConceptScreen.Charts}
                         <Chart />
                     {/if}
                 </div>                

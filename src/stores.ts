@@ -24,6 +24,7 @@ function createFullState() {
         updateConceptFilters: (conceptName, filters) => update(s => { s.data.user.preferences.concepts[conceptName].filters = filters; saveState(); return s; }),
         updateFiltersData: data => update(s => { s.ui.filterData = data; return s; }),
         updateChartConfig: config => update(s => { s.ui.chartConfig = config; saveState(); return s; }),
+        setWidgets: (conceptName, widgets) => update(s => { s.data.concepts[conceptName].widgets = widgets; saveState(); return s; }),
     };
 }
 

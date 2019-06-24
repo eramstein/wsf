@@ -122,10 +122,7 @@ export const bubbleChart = function() {
             helpers.spreadByCategory = getSpreadByCategory(data, config.posBy1, null);
         }
         if (type1 === DataType.Categorical && type2 === DataType.Categorical) {
-            var t0 = performance.now();
             helpers.plates = getPlatesChartHelpers(data, config, helpers, identifier);
-            var t1 = performance.now();
-            console.log("getPlatesChartHelpers took " + (t1 - t0));
         }
         if (type1 === DataType.Categorical && !type2 || type2 === DataType.Categorical && !type1) {
             // bar charts are in fact a one dimensional plate chart, same code works for both
@@ -265,9 +262,7 @@ export const bubbleChart = function() {
         // ANIMATION - on end of animation:
         // - memorize previous values
         // - draw helpers we want to hide during the animation
-        function onDrawFinished() {
-            console.log('FINISHED');
-            
+        function onDrawFinished() {            
             oldHelpers.spreadX = { ...helpers.spreadX };
             oldHelpers.spreadY = { ...helpers.spreadY };
             oldHelpers.spreadByCategory = { ...helpers.spreadByCategory }; 

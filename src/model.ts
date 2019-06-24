@@ -12,6 +12,7 @@ export enum Screen {
 export enum ConceptScreen {
     Lists = "LISTS",
     Charts = "CHARTS",
+    Cards = "CARDS",
 }
 
 export enum DataType {
@@ -43,11 +44,24 @@ export interface Concept {
     name: string;
     attributes: { [key: string] : Attribute };
     items: { [key: string] : any };
+    widgets: {
+        one: { [key: string] : Widget },
+        many: { [key: string] : Widget },
+    };
 }
 
 export interface Attribute {
     name: string;
     type: DataType;
+}
+
+export interface Widget {
+    name: string;
+    template?: string;
+    script?: string;
+    computedNode?: string;
+    width: string;
+    height: number;
 }
 
 export interface User {
