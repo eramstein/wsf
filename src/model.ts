@@ -7,6 +7,7 @@ export enum Screen {
     Concept = "CONCEPT",
     Instance = "INSTANCE",
     Articles = "ARTICLES",
+    WidgetAuthoring = "WIDGET_AUTHORING",
 }
 
 export enum ConceptScreen {
@@ -20,7 +21,12 @@ export enum DataType {
     Numeric = "NUMERIC",
     Categorical = "CATEGORICAL",
     Text = "TEXT",
-} 
+}
+
+export enum Cardinality {
+    One = "one",
+    Many = "many",
+}
 
 export interface FullState {
     ui: UI;
@@ -33,11 +39,19 @@ export interface UI {
     filteredItems: any[] | [];
     filterData: FilterData[];
     chartConfig: ChartConfig;
+    widgetAuthoring: WidgetAuthoring;
+    lastOpenWidget?: string;
 }
 
 export interface Data {
     concepts: { [key: string] : Concept };
     user: User;
+}
+
+export interface WidgetAuthoring {
+    widget: Widget;
+    conceptName: string;
+    cardinality: Cardinality;    
 }
 
 export interface Concept {

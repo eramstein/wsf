@@ -1,4 +1,5 @@
 import { State, printState, saveState } from "./stores";
+import { Cardinality } from "./model";
 
 export function handleKeyPress(event) {
     // l -> log state
@@ -53,6 +54,15 @@ export function handleKeyPress(event) {
             }
         }
         State.setWidgets('cards', widgets);
+        // State.openWidgetAuthoring({
+        //     widget: {
+        //         name: 'New widget',
+        //         height: 300,
+        //         width: '400px',
+        //     },
+        //     cardinality: Cardinality.One,
+        //     conceptName: 'cards',
+        // });
     }
     
 }

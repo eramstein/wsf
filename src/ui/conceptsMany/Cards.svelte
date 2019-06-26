@@ -1,7 +1,7 @@
 <script>
     import { afterUpdate } from 'svelte';
     import { State } from '../../stores';
-    import { DataType } from "../../model";
+    import { DataType, Cardinality } from "../../model";
     import Widget from "../Widget.svelte";
 
     const MAX_CARDS = 20;
@@ -9,10 +9,31 @@
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
     let widgets = Object.values(concept.widgets.one);
-    let widget = widgets.length > 0 && widgets[0];
+    let lastOpenWidget = $State.ui.lastOpenWidget && widgets.filter(w => w.name === $State.ui.lastOpenWidget)[0];    
+    let widget = widgets.length > 0 && (lastOpenWidget || widgets[0]);
     let showConfig = false;      
 
     function addWidget() {
+        State.openWidgetAuthoring({
+            widget: {
+                name: 'New widget',
+                height: 300,
+                width: '400px',
+                template: '',
+                script: '',
+                computedNode: '',                
+            },
+            cardinality: Cardinality.One,
+            conceptName: concept.name,
+        });
+    }
+
+    function editWidget() {        
+        State.openWidgetAuthoring({
+            widget: widget,
+            cardinality: Cardinality.One,
+            conceptName: concept.name,
+        });
     }
 
     function selectWidget(name) {             
@@ -26,10 +47,8 @@
 
     let container;
     let columns = 3;
-    console.log();
 
     afterUpdate(() => {
-        console.log(widget);
         
         if (widget.width.indexOf('cols') >= 0) {
             columns = widget.width.slice(0, -4);
@@ -119,7 +138,7 @@
         </div>
         <div class="config-buttons">
             {#if showConfig === false }
-            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
+            <div class="open-config-button"  on:click={ () => editWidget() }>
                 Config
             </div>
             {/if}

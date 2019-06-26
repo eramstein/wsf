@@ -7,6 +7,7 @@
     import Chart from './conceptsMany/Chart.svelte';
     import Cards from './conceptsMany/Cards.svelte';
     import Filters from './conceptsMany/Filters.svelte';
+    import WidgetAuthoring from './widgetAuthoring/WidgetAuthoring.svelte';
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
     const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + FILTER_VALUE_PADDING;
@@ -53,18 +54,22 @@
 
         {#if $State.ui.openScreen === Screen.Concept}
             <div class="concept">
-                <div class="filters"  style="width: {filtersWidth}px; max-width: {filtersWidth}px">
-                    <Filters />
-                </div>
-                <div class="contents">
-                    {#if $State.ui.screenParameters.widget === ConceptScreen.Lists}
-                        <List />
-                    {:else if $State.ui.screenParameters.widget === ConceptScreen.Cards}
-                        <Cards />
-                    {:else if $State.ui.screenParameters.widget === ConceptScreen.Charts}
-                        <Chart />
-                    {/if}
-                </div>                
+                {#if $State.ui.widgetAuthoring}
+                    <WidgetAuthoring />
+                {:else}
+                    <div class="filters"  style="width: {filtersWidth}px; max-width: {filtersWidth}px">
+                        <Filters />
+                    </div>
+                    <div class="contents">
+                        {#if $State.ui.screenParameters.widget === ConceptScreen.Lists}
+                            <List />
+                        {:else if $State.ui.screenParameters.widget === ConceptScreen.Cards}
+                            <Cards />
+                        {:else if $State.ui.screenParameters.widget === ConceptScreen.Charts}
+                            <Chart />
+                        {/if}
+                    </div>
+                {/if}             
             </div>
         {/if}    
 

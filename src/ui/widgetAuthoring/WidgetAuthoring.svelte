@@ -1,0 +1,148 @@
+<script>
+    import { State } from '../../stores';
+
+    $: widgetAuthoring = $State.ui.widgetAuthoring || {
+        widget: {
+            name: '',
+        },        
+    };
+
+    let fullAuthoring = false;
+    let includeScripts = true;
+
+    let initialName;
+
+    $: {
+        if (!initialName) {            
+            initialName = widgetAuthoring.widget.name;
+        }
+         
+    }
+
+    function save() {
+        if (widgetAuthoring.computedNode && widgetAuthoring.computedNode.length > 0) {
+            widgetAuthoring.template = null;
+            widgetAuthoring.script = null;
+        } else {
+            widgetAuthoring.computedNode = null;
+        }
+        State.deleteWidget(initialName);
+        State.saveWidget();
+        State.closeWidgetAuthoring();
+    }
+
+    function deleteWidget() {
+        const r = confirm("Delete widget?");
+        if (r === true) {
+            State.deleteWidget(initialName);
+            State.closeWidgetAuthoring();
+        }        
+    }
+
+</script>
+
+<style>
+    .authoring{
+        padding: 10px 20px;
+        height: 100%;
+        width: 100%;
+    }
+    .content {
+        display: flex;
+        height: 100%;
+    }
+    .top-bar {
+        display: flex;
+        justify-content: space-between;
+    }
+    .buttons {
+        display: flex;
+        align-items: center;
+    }
+    .buttons div {
+        margin-right: 10px;
+    }
+    .buttons div button {
+        width: 80px;
+    }
+    .options {
+        display: flex;
+        align-items: center;
+    }    
+    .options div {
+        padding-right: 20px;
+    }
+
+    .title {
+        font-weight: bold;
+        margin: 10px 0px;
+    }
+
+    textarea {
+        width: 100%;
+        height: 100%;
+    }
+
+</style>
+
+<div class="authoring">
+    <div class="top-bar">
+        <div class="options">
+            <div class="name">
+                <span>            
+                    Name
+                </span>
+                <input bind:value={widgetAuthoring.widget.name}>
+            </div>
+            <div>
+                <label>
+                    <input type=radio bind:group={fullAuthoring} value={false}>
+                    Template
+                </label>
+                <label>
+                    <input type=radio bind:group={fullAuthoring} value={true}>
+                    Full Component
+                </label>
+            </div>
+            <div>
+                {#if !fullAuthoring}
+                <label>
+                    <input type=checkbox bind:checked={includeScripts}>
+                    Include Scripts
+                </label>
+                {/if}
+            </div>
+        </div>
+        <div class="buttons">
+            <div>
+                <button on:click={ () => State.closeWidgetAuthoring() }>Cancel</button>
+            </div>
+            <div>
+                <button on:click={ () => save() }>Save</button>
+            </div>            
+            <div>
+                <button on:click={ () => deleteWidget() }>Delete</button>
+            </div>
+        </div>
+    </div>
+    <div class="content">
+        {#if !fullAuthoring}
+            <div style="width: { includeScripts ? '50' : '100' }%">
+                <div class="title">Template</div>
+                <textarea bind:value={widgetAuthoring.widget.template}></textarea>
+            </div>
+            {#if includeScripts}
+            <div style="width:50%">
+                <div class="title">Script</div>
+                <textarea bind:value={widgetAuthoring.widget.script}></textarea>
+            </div>
+            {/if}
+        {/if}
+        {#if fullAuthoring}
+        <div>
+            <textarea bind:value={widgetAuthoring.widget.computedNode}></textarea>
+        </div>
+        {/if}
+    </div>
+</div>
+

@@ -1,6 +1,6 @@
 import { get, writable } from "svelte/store";
 import { handleKeyPress } from "./keybinds";
-import { FullState, Screen } from "./model";
+import { FullState, Screen, WidgetAuthoring } from "./model";
 import { mutateStateAfterNavigation } from "./logic/navigation";
 
 export const State = createFullState();
@@ -25,6 +25,10 @@ function createFullState() {
         updateFiltersData: data => update(s => { s.ui.filterData = data; return s; }),
         updateChartConfig: config => update(s => { s.ui.chartConfig = config; saveState(); return s; }),
         setWidgets: (conceptName, widgets) => update(s => { s.data.concepts[conceptName].widgets = widgets; saveState(); return s; }),
+        openWidgetAuthoring: (widgetAuthoring : WidgetAuthoring) => update(s => { s.ui.widgetAuthoring = widgetAuthoring; saveState(); return s; }),
+        saveWidget: () => update(s => { s.data.concepts[s.ui.widgetAuthoring.conceptName].widgets[s.ui.widgetAuthoring.cardinality][s.ui.widgetAuthoring.widget.name] = s.ui.widgetAuthoring.widget; saveState(); return s; }),
+        closeWidgetAuthoring: () => update(s => { s.ui.lastOpenWidget = s.ui.widgetAuthoring.widget.name; s.ui.widgetAuthoring = null; saveState(); return s; }),
+        deleteWidget: (name) => update(s => { delete s.data.concepts[s.ui.widgetAuthoring.conceptName].widgets[s.ui.widgetAuthoring.cardinality][name]; s.ui.lastOpenWidget = null; saveState(); return s; }),
     };
 }
 
@@ -51,6 +55,7 @@ function getNewState(): FullState {
                 posBy2: null,
                 chartType: null,
             },
+            widgetAuthoring: null,
         },
     };
 }
