@@ -89,3 +89,7 @@ export function getRangeBy(vals : [any], attr : string) : Range {
 export function getUniqueValues(vals, attr) {
     return Array.from(new Set(vals.map(v => v[attr])));
 }
+
+export function capitalize(name : string) : string {
+    return name.charAt(0).toUpperCase() + name.slice(1);
+}

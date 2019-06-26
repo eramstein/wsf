@@ -139,7 +139,7 @@
             {/if}
         {/if}
         {#if fullAuthoring}
-        <div>
+        <div style="width:100%">
             <textarea bind:value={widgetAuthoring.widget.computedNode}></textarea>
         </div>
         {/if}

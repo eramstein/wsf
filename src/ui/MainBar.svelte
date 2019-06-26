@@ -1,6 +1,7 @@
 <script>
     import { State } from '../stores';
-    import { Screen, ConceptScreen } from '../model';
+    import { Screen, ConceptScreen, InstanceScreen } from '../model';
+    import { capitalize } from '../utils';
     import Link from './Link.svelte'
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
@@ -15,11 +16,7 @@
         display: flex;
         align-items: center;
         padding-left: 20px;
-    }
-    .home{
-        font-weight: bold;
-        cursor: pointer;
-    }
+    }    
     .menu {
         display: flex;
         height: 100%;
@@ -44,17 +41,38 @@
     .tab:hover {
         background-color: #4b4b4b;
     }
+    .top-left {
+        display: flex;
+    }
+    .home{
+        position: absolute;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    .page-name {
+        text-align: center;
+        flex-grow: 1;
+    }
 </style>
 
 <div class="main-bar">
-    <div style="width: {filtersWidth-20}px">
+    <div class="top-left" style="width: {filtersWidth-20}px">
         <Link screen={ Screen.Home } params={ null }>
             <div class="home">
-                HOME
+                H
             </div>
         </Link>
+        <div class="page-name">
+            {#if $State.ui.openScreen === Screen.Concept}
+                { capitalize($State.ui.screenParameters.concept) }
+            {/if}
+            {#if $State.ui.openScreen === Screen.Instance}
+                { capitalize($State.ui.screenParameters.instance) }
+            {/if}
+        </div>
     </div>
     <div class="menu">
+
         {#if $State.ui.openScreen === Screen.Concept}
             <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
                 <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Lists }">                
@@ -72,5 +90,19 @@
                 </div>
             </Link>
         {/if}
+
+        {#if $State.ui.openScreen === Screen.Instance}
+            <Link screen={ Screen.Instance } params={ { concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Mashups } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === InstanceScreen.Mashups }">                
+                    Mashups                
+                </div>
+            </Link>
+            <Link screen={ Screen.Instance } params={ { concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Articles } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === InstanceScreen.Articles }">                
+                    Articles                
+                </div>
+            </Link>
+        {/if}
+
     </div>
 </div>

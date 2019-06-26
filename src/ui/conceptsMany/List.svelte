@@ -1,9 +1,11 @@
 <script>
+    import { Screen, InstanceScreen, DataType } from '../../model';
     import { State } from '../../stores';
     import Link from '../Link.svelte';
     import { sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
 
     let showConfig = false;
 
@@ -73,6 +75,10 @@
     .lister th, .lister td {
         padding: 5px 0px 5px 20px;
         border-bottom: 1px solid #ccc;
+    }
+    .lister tbody tr:hover td {
+        cursor: pointer;
+        background-color: rgb(206, 231, 251);
     }
     .filter-input {
         width: 100px;
@@ -244,8 +250,8 @@
             </tr>            
         </thead>
         <tbody>
-            {#each items as item (item[Object.values(config.columns)[0].name]) }
-                <tr>
+            {#each items as item (item[idAttribute]) }
+                <tr on:click={ () => State.goTo(Screen.Instance, { concept: $State.ui.screenParameters.concept, instance: item[idAttribute], widget: InstanceScreen.Mashups }) }>
                     {#each displayedColumns as attribute (attribute.name) }
                         <td>
                             { item[attribute.name] }

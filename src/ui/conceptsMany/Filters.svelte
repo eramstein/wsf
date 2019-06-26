@@ -27,6 +27,7 @@
         align-items: flex-end;
         height: 40px;
         margin-bottom: 15px;
+        justify-content: center;
     }
     .concept-count {
         font-size: 28px;
@@ -49,7 +50,6 @@
 <div class="filters">
     <div class="filters-title">
         <span class="concept-count">{filteredItems.length.toLocaleString('fr', {useGrouping:true})}</span>
-        <span class="concept-name">{concept.name}</span>         
     </div>
     {#each chartsData as data (data.attribute) }
         <div class="filter">

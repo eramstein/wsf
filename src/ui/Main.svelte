@@ -71,7 +71,13 @@
                     </div>
                 {/if}             
             </div>
-        {/if}    
+        {/if}
+
+        {#if $State.ui.openScreen === Screen.Instance}
+            <div>
+                instance
+            </div>
+        {/if}
 
     </div>   
 

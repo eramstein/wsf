@@ -16,6 +16,11 @@ export enum ConceptScreen {
     Cards = "CARDS",
 }
 
+export enum InstanceScreen {
+    Mashups = "MASHUPS",
+    Articles = "ARTICLES",
+}
+
 export enum DataType {
     Identifier = "IDENTIFIER",
     Numeric = "NUMERIC",
