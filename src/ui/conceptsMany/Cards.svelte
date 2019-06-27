@@ -2,6 +2,7 @@
     import { afterUpdate } from 'svelte';
     import { State } from '../../stores';
     import { DataType, Cardinality } from "../../model";
+    import { GRID_COLUMNS } from "../../constants";
     import Widget from "../Widget.svelte";
 
     const MAX_CARDS = 20;
@@ -18,7 +19,7 @@
             widget: {
                 name: 'New widget',
                 height: 300,
-                width: '400px',
+                width: '4cols',
                 template: '',
                 script: '',
                 computedNode: '',                
@@ -51,7 +52,7 @@
     afterUpdate(() => {
         
         if (widget.width.indexOf('cols') >= 0) {
-            columns = widget.width.slice(0, -4);
+            columns = Math.max(1, Math.floor(GRID_COLUMNS / widget.width.slice(0, -4)));
         } else if (widget.width.indexOf('px') >= 0) {
             columns = Math.max(1, Math.floor(container.offsetWidth / widget.width.slice(0, -2)));
         }                
@@ -146,7 +147,7 @@
     </div>
 
     <div class="cards"
-        style="grid-auto-rows: minmax(100px, {widget.height+24}px);
+        style="grid-auto-rows: minmax(100px, {widget.height*1+24}px);
                grid-template-columns: repeat({columns}, 1fr);"
     >
         {#each items as entity (entity[idAttribute]) }

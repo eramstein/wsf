@@ -4,6 +4,8 @@
     $: widgetAuthoring = $State.ui.widgetAuthoring || {
         widget: {
             name: '',
+            width: '4cols',
+            height: 300,
         },        
     };
 
@@ -93,6 +95,18 @@
                     Name
                 </span>
                 <input bind:value={widgetAuthoring.widget.name}>
+            </div>
+            <div>
+                <span>            
+                    Width (px or cols)
+                </span>
+                <input bind:value={widgetAuthoring.widget.width}>
+            </div>
+            <div>
+                <span>            
+                    Height (px)
+                </span>
+                <input bind:value={widgetAuthoring.widget.height}>
             </div>
             <div>
                 <label>

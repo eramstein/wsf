@@ -7,18 +7,17 @@ export function handleKeyPress(event) {
     if (event.charCode === 108) {
         printState();
     }
-    // s -> save
-    if (event.charCode === 115) {
-        saveState();
-    }
-    // t -> temp function
-    if (event.charCode === 116) {
-        const prefs = get(State).data.user.preferences.concepts['cards'];
-        prefs.mashups = [];
-        delete prefs.widgets;
-        State.updateConceptPreferences('cards', prefs);
-    }
-    
+    // // s -> save
+    // if (event.charCode === 115) {
+    //     saveState();
+    // }
+    // // t -> temp function
+    // if (event.charCode === 116) {
+    //     const prefs = get(State).data.user.preferences.concepts['cards'];
+    //     prefs.mashups = [];
+    //     delete prefs.widgets;
+    //     State.updateConceptPreferences('cards', prefs);
+    // }    
 }
 
 

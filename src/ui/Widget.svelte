@@ -34,39 +34,6 @@
             (or a function to get the data from the database if this is too much deserializing, TBD)
     */
 
-    // const dawid = {
-    //     name: "dawid",
-    //     concept: "card",
-    //     template:"<style> div{color:red;}</style><div><div>hello {{name}}, double is {{doubled}}</div><wsf-subwid1 daname='{{name}}'/></div>",
-    //     script:"(() => { return { doubled: data.power*2 } })()",
-    //     computedNode:`
-    //         (() => data => { 
-    //             const node = document.createElement('div');
-    //             node.innerHTML='itsa me, ' + data.name;
-    //             node.onclick=()=>{ alert('ciao'); };
-    //             return node; 
-    //         })()
-    //     `,
-    // };
-
-    // const data = {
-    //     name: "Mario",
-    //     power: 4501,
-    // }
-
-    // customElements.define('wsf-subwid1', class extends HTMLElement {
-    //     constructor() {
-    //         super();
-    //         const shadowRoot = this.attachShadow({mode: 'open'});
-    //         console.log(this, this.getAttribute('daname'));
-            
-    //         shadowRoot.innerHTML = '<div><b>sub1</b> - hello again, ' + this.getAttribute('daname') + '</div>';
-    //     }
-    // });
-
-    //<Widget template={ dawid.template } script={ dawid.script } computedNode={ dawid.computedNode } data={ data } />
-
-
     import { afterUpdate } from 'svelte';
     import { State } from '../stores';
     export let data;
