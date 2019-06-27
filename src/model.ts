@@ -95,6 +95,7 @@ export interface Preferences {
 export interface ConceptPreferences {
     lists: ListConfig[];
     filters: { [key: string] : FilterConfig };
+    mashups: MashupConfig[];
 }
 
 export interface ListConfig {
@@ -120,4 +121,10 @@ export interface FilterConfig {
     } };
     from: number;
     to: number;
+}
+
+export interface MashupConfig {
+    id: number;
+    name: string;
+    widgets: string[];
 }

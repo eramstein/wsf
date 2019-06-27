@@ -107,7 +107,7 @@ export function saveListConfig(oldLists : ListConfig[], listConfig : ListConfig)
 
     if (isDefault) {
         listConfig.id = getNewID();
-        newLists = newLists.concat([listConfig]);
+        newLists = [listConfig];
     }
 
     return newLists;

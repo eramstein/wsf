@@ -1,16 +1,16 @@
 <script>
     import { State } from '../stores';
-    import { Screen, ConceptScreen } from '../model';
+    import { Screen, ConceptScreen, InstanceScreen } from '../model';
     import MainBar from './MainBar.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
     import List from './conceptsMany/List.svelte';
     import Chart from './conceptsMany/Chart.svelte';
     import Cards from './conceptsMany/Cards.svelte';
     import Filters from './conceptsMany/Filters.svelte';
+    import Mashup from './conceptsOne/Mashup.svelte';
     import WidgetAuthoring from './widgetAuthoring/WidgetAuthoring.svelte';
-    import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
+    import { LEFT_BAR_WIDTH } from '../constants';
 
-    const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + FILTER_VALUE_PADDING;
 </script>
 
 <style>
@@ -57,7 +57,7 @@
                 {#if $State.ui.widgetAuthoring}
                     <WidgetAuthoring />
                 {:else}
-                    <div class="filters"  style="width: {filtersWidth}px; max-width: {filtersWidth}px">
+                    <div class="filters" style="width: {LEFT_BAR_WIDTH}px; max-width: {LEFT_BAR_WIDTH}px">
                         <Filters />
                     </div>
                     <div class="contents">
@@ -74,9 +74,9 @@
         {/if}
 
         {#if $State.ui.openScreen === Screen.Instance}
-            <div>
-                instance
-            </div>
+            {#if $State.ui.screenParameters.widget === InstanceScreen.Mashups}
+                <Mashup />
+            {/if}
         {/if}
 
     </div>   

@@ -15,7 +15,7 @@
     let config = getDefaultConfig(concept.attributes, defaultLists);
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
-    $: lists = preferences && preferences.lists;
+    $: lists = preferences && preferences.lists && preferences.mashups.length > 0 || [config];;
 
     $: filteredItems = $State.ui.filteredItems;    
 
