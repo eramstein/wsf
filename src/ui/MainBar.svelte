@@ -44,11 +44,6 @@
     .top-left {
         display: flex;
     }
-    .home{
-        position: absolute;
-        font-weight: bold;
-        cursor: pointer;
-    }
     .page-name {
         text-align: center;
         flex-grow: 1;
@@ -57,18 +52,16 @@
 
 <div class="main-bar">
     <div class="top-left" style="width: {filtersWidth-20}px">
-        <Link screen={ Screen.Home } params={ null }>
-            <div class="home">
-                H
-            </div>
-        </Link>
-        <div class="page-name">
-            {#if $State.ui.openScreen === Screen.Concept}
-                { capitalize($State.ui.screenParameters.concept) }
-            {/if}
-            {#if $State.ui.openScreen === Screen.Instance}
-                { capitalize($State.ui.screenParameters.instance) }
-            {/if}
+        <div class="page-name">    
+            <Link screen={ Screen.Home } params={ null }>            
+                    {#if $State.ui.openScreen === Screen.Concept}
+                        { capitalize($State.ui.screenParameters.concept) }
+                    {/if}
+                    {#if $State.ui.openScreen === Screen.Instance}
+                        { capitalize($State.ui.screenParameters.instance) }
+                    {/if}
+                
+            </Link>
         </div>
     </div>
     <div class="menu">

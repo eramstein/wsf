@@ -1,14 +1,17 @@
 <script>
+    import { afterUpdate } from 'svelte';
     import { Screen, InstanceScreen, DataType } from '../../model';
     import { LEFT_BAR_WIDTH } from '../../constants';
     import { State } from '../../stores';
     import Link from '../Link.svelte';
-    import { getDefaultConfig, getNewMashup, addDefaultIfNeeded } from './Mashup';
+    import { getDefaultConfig, getNewMashup, addDefaultIfNeeded, getLayoutSimplified } from './Mashup';
+    import Widget from "../Widget.svelte";
 
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    let instance = concept.items[$State.ui.screenParameters.instance];
     const allWidgets = Object.keys(concept.widgets.one);
     
-    let showConfig = true;
+    let showConfig = false;
 
     const defaultPrefs = $State.data.user.preferences.concepts[concept.name];
     const defaultMashups = defaultPrefs && defaultPrefs.mashups;
@@ -19,6 +22,15 @@
     $: mashups = preferences && preferences.mashups && preferences.mashups.length > 0 ? preferences.mashups : [config];
 
     $: selectedMashup = config.id;
+    
+    let container;    
+    let layout;
+    let widgetsData = [];
+
+    afterUpdate(() => {
+        widgetsData = Object.values(concept.widgets.one).filter(w => config.widgets.indexOf(w.name) >= 0);
+        widgetsData = getLayoutSimplified(widgetsData);
+    });    
 
     function saveConfig() {        
         const newMashups = addDefaultIfNeeded(mashups, config);
@@ -67,6 +79,7 @@
         background-color: rgb(92, 92, 92);
         height: 40px;
         display: flex;
+        justify-content: space-between;
     }
     .mashup-tabs {
         height: 100%;
@@ -162,18 +175,25 @@
         margin-top: 15px;
         margin-bottom: 5px;
     }
+    .mashup {
+        display: grid;
+        grid-template-columns: auto auto auto;
+        grid-template-rows: auto auto;
+        grid-gap: 0px;
+        background-color: #eee;
+        padding: 0px;
+    }
+    .card {
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+        background-color: white;
+        padding: 12px  20px;
+    }
 </style>
 
-<div class="page">
+<div class="page" bind:this={container}>
 
     <div class="mashups-bar">
-        <div class="config-buttons" style="width:{LEFT_BAR_WIDTH}px">
-            {#if showConfig === false }
-            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
-                Config
-            </div>            
-            {/if}
-        </div>
         <div class="mashup-tabs">
             {#if !mashups }                
                 <div class="selected">{ config.name }</div>
@@ -183,6 +203,13 @@
                         on:click={ () => selectMashup(mashup.id) }>{ mashup.name }</div>
                 {/each}
                 <div class="add-mashup" on:click={ () => addMashup() }>+</div>
+            {/if}
+        </div>
+        <div class="config-buttons">
+            {#if showConfig === false }
+            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
+                Config
+            </div>            
             {/if}
         </div>
     </div>  
@@ -217,7 +244,14 @@
             </div>  
         {/if}
         <div class="mashup">
-            MASHUP
+            {#each widgetsData as widget (widget.name) }
+                <div class="card"
+                    style="min-height: minmax(100px, {widget.height}px);">
+                    <Widget
+                        template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ instance }
+                    />
+                </div>
+            {/each}
         </div>
     </div>
 
