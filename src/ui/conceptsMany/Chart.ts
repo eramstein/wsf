@@ -98,6 +98,9 @@ export const bubbleChart = function() {
     this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
         console.log('UPDATE CHART');
 
+        console.log(config);
+        
+
         ctx.clearRect(0, 0, canvas.width, canvas.height);        
 
         const type1 = attributes[config.posBy1] && attributes[config.posBy1].type;
@@ -142,7 +145,7 @@ export const bubbleChart = function() {
             bubbles.sort((a, b) => a.data[config.colorBy].localeCompare(b.data[config.colorBy]) );
         } else {
             bubbles.sort((a, b) => a.data[config.posBy1].localeCompare(b.data[config.posBy1]) );
-        }
+        }        
         
         // BUBBLES - init, set color and size
         bubbles = data.map(d => {
@@ -195,9 +198,9 @@ export const bubbleChart = function() {
             bubbles = platesBubbles(bubbles, config, helpers);
         }
         // random
-        else {
+        else {            
             bubbles = randomPos(bubbles, helpers);
-        }        
+        }
 
         // ANIMATION - loop function
         const startTime = new Date().getTime();

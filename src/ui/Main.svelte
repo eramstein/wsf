@@ -3,6 +3,7 @@
     import { Screen, ConceptScreen, InstanceScreen } from '../model';
     import MainBar from './MainBar.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
+    import ConceptManagement from './conceptsManagement/ConceptManagement.svelte';
     import List from './conceptsMany/List.svelte';
     import Chart from './conceptsMany/Chart.svelte';
     import Cards from './conceptsMany/Cards.svelte';
@@ -56,6 +57,8 @@
             <div class="concept">
                 {#if $State.ui.widgetAuthoring}
                     <WidgetAuthoring />
+                {:else if $State.ui.screenParameters.widget === ConceptScreen.Management}
+                    <ConceptManagement />
                 {:else}
                     <div class="filters" style="width: {LEFT_BAR_WIDTH}px; max-width: {LEFT_BAR_WIDTH}px">
                         <Filters />

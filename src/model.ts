@@ -14,6 +14,7 @@ export enum ConceptScreen {
     Lists = "LISTS",
     Charts = "CHARTS",
     Cards = "CARDS",
+    Management = "MANAGEMENT",
 }
 
 export enum InstanceScreen {
@@ -45,6 +46,7 @@ export interface UI {
     filterData: FilterData[];
     chartConfig: ChartConfig;
     widgetAuthoring: WidgetAuthoring;
+    lastOpenConcept?: string;
     lastOpenWidget?: string;
 }
 
@@ -62,16 +64,21 @@ export interface WidgetAuthoring {
 export interface Concept {
     name: string;
     attributes: { [key: string] : Attribute };
-    items: { [key: string] : any };
+    items: { [key: string] : Item };
     widgets: {
         one: { [key: string] : Widget },
         many: { [key: string] : Widget },
     };
+    relations: ConceptRelation[];
 }
 
 export interface Attribute {
     name: string;
     type: DataType;
+}
+
+export interface Item {
+    __relations__?: { [key: string] : ItemRelation[] };
 }
 
 export interface Widget {
@@ -81,6 +88,18 @@ export interface Widget {
     computedNode?: string;
     width: string;
     height: number;
+}
+
+export interface ConceptRelation {
+    name: string;
+    concept: string;
+    cardinality: Cardinality;
+    qualifiers: { name: string; type: string; }[];
+}
+
+export interface ItemRelation {
+    item: string;
+    qualifiers: { [key: string] : any };
 }
 
 export interface User {

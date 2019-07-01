@@ -9,7 +9,7 @@
     $: filters = preferences && preferences.filters;
     $: filteredItems = $State.ui.filteredItems;
 
-    $: if (!filters) {
+    $: if (!filters || Object.keys(filters).length === 0) {
         setDefaultFilterConfig(concept);
     }
 

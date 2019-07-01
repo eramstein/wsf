@@ -1,7 +1,6 @@
 <script>
     import { State } from '../../stores';
     import Link from '../Link.svelte';
-    import Widget from '../Widget.svelte';
     import { Screen, ConceptScreen } from '../../model';
 
     import { csvIntoConcept } from '../../logic/import';
@@ -43,30 +42,74 @@
     }
     .concept {
         display: flex;
+        flex-direction: column;        
+        border: 1px solid #ccc;
+        border-radius: 6px;        
+        background-color: white;
+        min-height: 300px;        
+    }
+    .name {
+        display: flex;
         align-items: center;
         justify-content: center;
-        border: 1px solid #ccc;
-        border-radius: 6px;
+        font-size: 80px;
+        color: steelblue;
+        height: 200px;
+        border-bottom: 1px solid #ccc;
+    }
+    .stats {
+        display: flex;
+        align-items: center;
+        height: 100px;
+    }
+    .items, .metadata {
+        height: 100%;
+        width: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: steelblue;
+        cursor: pointer;
+    }
+    .items:hover, .metadata:hover {
+        background-color: rgb(250, 250, 250);
+    }
+    .items {
+        border-right: 1px solid #ccc;
+    }    
+    .plus {
         font-size: 100px;
         color: steelblue;
-        background-color: white;
-        min-height: 300px;
-        cursor: pointer;
+        align-items: center;
+        justify-content: center;
     }
 </style>
 
 <div class="concepts">
-    <div class="concept" type="file"
+    <div class="concept plus" type="file"
         ondragenter="event.stopPropagation(); event.preventDefault();"
         ondragover ="event.stopPropagation(); event.preventDefault();"
         on:drop|preventDefault={ loadFile }>
         +
     </div>
-    {#each Object.values(concepts) as concept (concept.name) }
-        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Lists } }>
+    {#each Object.values(concepts) as concept (concept.name) }        
             <div class="concept">
-                { concept.name }
-            </div>
-        </Link>
+                <div class="name">                
+                    { concept.name }
+                </div>
+                <div class="stats">                               
+                    <div class="items">
+                        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Lists } }>
+                            { Object.keys(concept.items).length } items
+                        </Link>
+                    </div>
+                    <div class="metadata">
+                        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Management } }>
+                            { Object.keys(concept.attributes).length } attributes
+                        </Link>
+                    </div>              
+                </div>
+            </div>        
     {/each}
 </div>

@@ -79,6 +79,9 @@
         <div>
             <span>Position By </span>
             <select bind:value={$State.ui.chartConfig.posBy1}>
+                <option value={null}>
+                    -
+                </option>
                 {#each attributes as attribute}
                     <option value={attribute.attribute}>
                         {attribute.attribute}

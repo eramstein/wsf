@@ -86,7 +86,7 @@ export function setDefaultFilterConfig(concept : Concept) {
             to: null,
             categories: {},
         }
-    });
+    });    
     State.updateConceptFilters(concept.name, filtersPreferences);
 }
 

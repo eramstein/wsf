@@ -1,5 +1,12 @@
 import { Concept, Attribute, DataType } from "../model";
 
+export interface RelationToPush {
+    relation: string;
+    object: string;
+    subject: string;
+    qualifiers: { [key: string] : any };
+}
+
 const TEXT_TYPE_TRESHOLD = 100;
 
 // assumptions:
@@ -66,5 +73,36 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
         items,
         attributes,
         widgets: { one:{}, many:{} },
+        relations: [],
     };
+}
+
+// assumptions:
+// - the first row is the attribute names
+// - the first column is the relation name
+// - the second column is the object name
+// - the third column is the subject name
+// - each subsequent column is a qualifier
+export function csvIntoRelations(csv: any) : RelationToPush[] {
+    const lines=csv.split("\n");
+    const headers = lines[0].split(",");
+    const result = [];
+
+    for(let i=1;i<lines.length;i++){
+        const relationToPush = <RelationToPush>{};
+        const currentline = lines[i].split(",");
+        relationToPush.relation = currentline[0];
+        relationToPush.object = currentline[1];
+        relationToPush.subject = currentline[2];
+        if (headers.length > 3) {
+            for(let j=3;j<headers.length;j++){
+                if (j === 3) {
+                    relationToPush.qualifiers = {};
+                }
+                relationToPush.qualifiers[headers[j]] =  currentline[j];           
+            }
+        }        
+        result.push(relationToPush);
+    }    
+    return result;
 }

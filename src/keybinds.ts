@@ -7,21 +7,43 @@ export function handleKeyPress(event) {
     if (event.charCode === 108) {
         printState();
     }
+
     // // s -> save
     // if (event.charCode === 115) {
     //     saveState();
     // }
+
     // // t -> temp function
-    // if (event.charCode === 116) {
-    //     const prefs = get(State).data.user.preferences.concepts['cards'];
-    //     prefs.mashups = [];
-    //     delete prefs.widgets;
-    //     State.updateConceptPreferences('cards', prefs);
-    // }    
+    if (event.charCode === 116) {
+        //State.deleteConcept('players');
+    }    
 }
 
 
 /*
+
+DECKS RELATIONS
+
+const relations = [
+    {
+        name: 'Has Key Card',
+        concept: 'cards',
+        cardinality: 'one',
+        qualifiers: [],
+    },
+    {
+        name: 'Has Author',
+        concept: 'players',
+        cardinality: 'one',
+        qualifiers: [],
+    },
+    {
+        name: 'Includes Card',
+        concept: 'cards',
+        cardinality: 'many',
+        qualifiers: [{ name: 'quantity', type: 'NUMERIC' }],
+    }
+]
 
 RESET WIDGETS
 

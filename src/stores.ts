@@ -18,10 +18,11 @@ function createFullState() {
         load: data => set(data),
         goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s); saveState(); return s; }),
         
-        addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
+        addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; s.data.user.preferences.concepts[concept.name] = {lists: [], mashups: [], filters: {}}; saveState(); return s; }),
         filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
         updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
         updateConceptFilters: (conceptName, filters) => update(s => { s.data.user.preferences.concepts[conceptName].filters = filters; saveState(); return s; }),
+        updateConceptRelations: (conceptName, relations) => update(s => { s.data.concepts[conceptName].relations = relations; saveState(); return s; }),
         updateFiltersData: data => update(s => { s.ui.filterData = data; return s; }),
         updateChartConfig: config => update(s => { s.ui.chartConfig = config; saveState(); return s; }),
         setWidgets: (conceptName, widgets) => update(s => { s.data.concepts[conceptName].widgets = widgets; saveState(); return s; }),
@@ -29,6 +30,15 @@ function createFullState() {
         saveWidget: () => update(s => { s.data.concepts[s.ui.widgetAuthoring.conceptName].widgets[s.ui.widgetAuthoring.cardinality][s.ui.widgetAuthoring.widget.name] = s.ui.widgetAuthoring.widget; saveState(); return s; }),
         closeWidgetAuthoring: () => update(s => { s.ui.lastOpenWidget = s.ui.widgetAuthoring.widget.name; s.ui.widgetAuthoring = null; saveState(); return s; }),
         deleteWidget: (name) => update(s => { delete s.data.concepts[s.ui.widgetAuthoring.conceptName].widgets[s.ui.widgetAuthoring.cardinality][name]; s.ui.lastOpenWidget = null; saveState(); return s; }),
+        deleteItem: (concept, item) => update(s => { delete s.data.concepts[concept].items[item]; saveState(); return s; }),
+        deleteConcept: (concept) => update(s => { delete s.data.concepts[concept]; saveState(); return s; }),
+        addRelation: (conceptName, itemName, relation, subject, qualifiers) => update(s => {
+            const item = s.data.concepts[conceptName].items[itemName];
+            if (!item.__relations__) { item.__relations__ = {} }
+            if (!item.__relations__[relation]) { item.__relations__[relation] = [] }
+            item.__relations__[relation].push({ item: subject, qualifiers: qualifiers });
+            saveState(); return s;
+        }),
     };
 }
 
