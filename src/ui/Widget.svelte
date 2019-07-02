@@ -1,5 +1,4 @@
 <script>
-
     /*
         LEVEL 1: simple template
             pass HTML in the template prop. double mustaches like {{ mana_cost }} get replaced with the content of data

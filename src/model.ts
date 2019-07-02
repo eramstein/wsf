@@ -88,6 +88,9 @@ export interface Widget {
     computedNode?: string;
     width: string;
     height: number;
+    inMashups: boolean;
+    inLists: boolean;
+    nestable: boolean;
 }
 
 export interface ConceptRelation {
@@ -123,6 +126,7 @@ export interface ListConfig {
     sortBy: string;
     sortDirection: string;
     columns: { [key: string] : Column } | {};
+    widgets: { [key: string] : boolean } | {};
     pages: number;
 }
 

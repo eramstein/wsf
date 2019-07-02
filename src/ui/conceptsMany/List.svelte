@@ -2,6 +2,7 @@
     import { Screen, InstanceScreen, DataType } from '../../model';
     import { State } from '../../stores';
     import Link from '../Link.svelte';
+    import Widget from "../Widget.svelte";
     import { sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
@@ -12,10 +13,10 @@
     const defaultPrefs = $State.data.user.preferences.concepts[concept.name];
     const defaultLists = defaultPrefs && defaultPrefs.lists;
 
-    let config = getDefaultConfig(concept.attributes, defaultLists);
+    let config = getDefaultConfig(concept.attributes, concept.widgets.one, defaultLists);
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
-    $: lists = preferences && preferences.lists && preferences.lists.length > 0 ? preferences.lists : [config];
+    $: lists = preferences && preferences.lists && preferences.lists.length > 0 ? preferences.lists : [config];    
 
     $: filteredItems = $State.ui.filteredItems;    
 
@@ -58,8 +59,13 @@
 
     $: items = getList(filteredItems, concept.attributes, config);
     $: displayedColumns = Object.values(config.columns).filter(c => c.display);
+    $: displayedWidgets = config.widgets ?
+        Object.entries(config.widgets)
+            .filter(c => c[1] === true)
+            .map(c => concept.widgets.one[c[0]])
+     : [];
 
-    $: selectedList = config.id;    
+    $: selectedList = config.id;
         
 </script>
 
@@ -155,8 +161,12 @@
         background-color: #c50404;
         color: white;
     }
+    .checkboxes-group-title {
+        padding: 10px 0px 0px 0px;
+        font-weight: bold;
+    }
     .checkboxes {
-        padding: 20px 0px 0px 0px;
+        padding: 10px 0px 0px 0px;
         display: grid;
         grid-template-columns: 200px 200px 200px 200px;
         grid-column-gap: 10px;
@@ -223,10 +233,19 @@
                     <button on:click={ () => { showConfig = false; } }>Cancel</button>
                 </div>
             </div>
-            <div class="checkboxes">
+            <div class="checkboxes-group-title">Raw Data</div>
+            <div class="checkboxes">                
                 {#each Object.values(config.columns) as attribute (attribute.name) }
                     <label class="checkbox">
                         <input type=checkbox bind:checked={ config.columns[attribute.name].display }> { attribute.name }
+                    </label>
+                {/each}
+            </div>
+            <div class="checkboxes-group-title">Sparklines</div>
+            <div class="checkboxes">                 
+                {#each Object.keys(config.widgets) as widget (widget) }
+                    <label class="checkbox">
+                        <input type=checkbox bind:checked={ config.widgets[widget] }> { widget }
                     </label>
                 {/each}
             </div>
@@ -236,6 +255,13 @@
     <table class="lister">
         <thead>
             <tr>
+                {#each displayedWidgets as widget (widget.name) }
+                    <th>
+                        <div class="column-name">                        
+                            { widget.name }
+                        </div>
+                    </th>
+                {/each}
                 {#each displayedColumns as attribute (attribute.name) }
                     <th>
                         <div class="column-name" on:click={ () => sortColumn(attribute.name)}>
@@ -249,9 +275,16 @@
                 {/each}
             </tr>            
         </thead>
-        <tbody>
+        <tbody>            
             {#each items as item (item[idAttribute]) }
                 <tr on:click={ () => State.goTo(Screen.Instance, { concept: $State.ui.screenParameters.concept, instance: item[idAttribute], widget: InstanceScreen.Mashups }) }>
+                    {#each displayedWidgets as widget (widget) }
+                        <td>
+                            <Widget
+                                template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ item }
+                            />
+                        </td>
+                    {/each}
                     {#each displayedColumns as attribute (attribute.name) }
                         <td>
                             { item[attribute.name] }

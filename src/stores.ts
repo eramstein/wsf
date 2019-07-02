@@ -2,6 +2,7 @@ import { get, writable } from "svelte/store";
 import { handleKeyPress } from "./keybinds";
 import { FullState, Screen, WidgetAuthoring } from "./model";
 import { mutateStateAfterNavigation } from "./logic/navigation";
+import { defineCustomElements } from "./logic/customElements.js";
 
 export const State = createFullState();
 
@@ -98,7 +99,8 @@ function loadState() {
 
     request.onsuccess = function(event) {
         if (request.result) {            
-            State.load(request.result.state); 
+            State.load(request.result.state);
+            defineCustomElements(request.result.state.data.concepts);
         } else {
           console.log('No data record');
         }

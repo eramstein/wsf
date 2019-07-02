@@ -1,4 +1,4 @@
-import { DataType, ConceptPreferences, ListConfig, Column } from "../../model";
+import { DataType, ConceptPreferences, ListConfig, Column, Widget } from "../../model";
 
 const PAGE_SIZE = 60;
 
@@ -7,7 +7,7 @@ export enum Sorting {
     Desc = "desc",
 }
 
-export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig {    
+export function getDefaultConfig(attributes, widgets : { [key: string] : Widget }, lists : ListConfig[]) : ListConfig {    
     if (!lists || lists.length === 0) {
         return {
             id: 0,
@@ -15,10 +15,19 @@ export function getDefaultConfig(attributes, lists : ListConfig[]) : ListConfig 
             sortBy: null,
             sortDirection: null,
             columns: getColumnsFromAttributes(attributes),
+            widgets: {},
             pages: 1,
         };
     }
-    return lists[0];
+
+    const sparklines = Object.values(widgets).filter(w => w.inLists === true);
+    const firstList = lists[0];
+    sparklines.forEach(s => {
+        if (firstList.widgets[s.name] === undefined) {
+            firstList.widgets[s.name] = false;
+        }
+    })
+    return firstList;
 }
 
 export function filterItem(item, columns : Column[]) {        
@@ -120,6 +129,7 @@ export function getNewList(attributes) : ListConfig {
         sortBy: null,
         sortDirection: null,
         columns: getColumnsFromAttributes(attributes),
+        widgets: {},
         pages: 1,
     }
 }

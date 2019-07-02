@@ -6,6 +6,9 @@
             name: '',
             width: '4cols',
             height: 300,
+            inMashups: true,
+            inLists: false,
+            nestable: false,
         },        
     };
 
@@ -100,13 +103,13 @@
                 <span>            
                     Width (px or cols)
                 </span>
-                <input bind:value={widgetAuthoring.widget.width}>
+                <input bind:value={widgetAuthoring.widget.width} style="width:80px">
             </div>
             <div>
                 <span>            
                     Height (px)
                 </span>
-                <input bind:value={widgetAuthoring.widget.height}>
+                <input bind:value={widgetAuthoring.widget.height} style="width:80px">
             </div>
             <div>
                 <label>
@@ -125,6 +128,26 @@
                     Include Scripts
                 </label>
                 {/if}
+            </div>
+            <div>
+                <div>
+                    <label>
+                        <input type=checkbox bind:checked={widgetAuthoring.widget.inMashups}>
+                        In Mashups
+                    </label>
+                </div>
+                <div>
+                    <label>
+                        <input type=checkbox bind:checked={widgetAuthoring.widget.inLists}>
+                        In Lists
+                    </label>
+                </div>
+            </div>
+            <div>
+                <label>
+                    <input type=checkbox bind:checked={widgetAuthoring.widget.nestable}>
+                    Nestable
+                </label>
             </div>
         </div>
         <div class="buttons">

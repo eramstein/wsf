@@ -1,0 +1,41 @@
+<style>
+.aligned {
+display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+}
+.aligned img {
+ margin-left: 1px;
+}
+</style>
+{{dawid}}
+
+
+(() => {
+
+const manaCost = data['Mana Cost'] ||data.manacost;
+
+if (!manaCost) {
+    return {
+    dawid: "",
+    }
+}
+
+let htmlToPrint = manaCost 
+    .replace(/{G}/g, '<img width="14px"  src="https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/8/88/G.svg?version=df0df93e1e913211caca79c573e08235" />')
+    .replace(/{W}/g, ' <img width="14px"  src="https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/8/8e/W.svg" />')
+    .replace(/{U}/g, '<img width="14px"  src="https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/9/9f/U.svg?version=242e3a0c1616389c9f09510d598dc5c0" />')
+    .replace(/{B}/g, '<img width="14px"  src="https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/2/2f/B.svg?version=019551d4756f33e6432aaa8dcc0966f8" />')
+    .replace(/{R}/g, '<img width="14px"  src="https://gamepedia.cursecdn.com/mtgsalvation_gamepedia/8/87/R.svg?version=5549fbad7279775e94ad0ae307a289a1" />')
+    .replace(/{/g, '')
+    .replace(/}/g, '')
+;
+
+let dawid = '<div class="aligned">' + htmlToPrint  + '</div>';
+
+return {
+    dawid: dawid,
+};
+
+})()
