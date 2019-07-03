@@ -1,0 +1,19 @@
+<style>
+    .row { display:flex; padding-bottom: 5px; }
+    .title { justify-content: space-between; }
+</style>
+<div>
+    <div class="row title">
+        <div>
+            <b>{{Name}}</b>
+        </div>
+        <div>
+            <wsf-mana-cost data-manacost="{{Mana Cost}}" />
+        </div>
+    </div>
+    <div class="row">
+        <div>
+            {{Oracle Text}}
+        </div>
+    </div>
+</div>

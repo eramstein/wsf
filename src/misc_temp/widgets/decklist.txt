@@ -1,0 +1,19 @@
+(() => {
+
+let list;
+
+if (!data.__relations__ || !data.__relations__['Includes Card']) {
+    list = 'No decklist';
+} else {
+    list = '<ul>';
+    Object.values(data.__relations__['Includes Card']).forEach(r => {
+        list += '<li>' + r.qualifiers.quantity + ' ' + r.item + '</li>';
+    })
+    list += '</ul>';
+}
+
+return {
+    list,
+};
+
+})()
