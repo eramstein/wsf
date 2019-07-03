@@ -20,6 +20,7 @@ export enum ConceptScreen {
 export enum InstanceScreen {
     Mashups = "MASHUPS",
     Articles = "ARTICLES",
+    Relations = "RELATIONS",
 }
 
 export enum DataType {
@@ -48,11 +49,17 @@ export interface UI {
     widgetAuthoring: WidgetAuthoring;
     lastOpenConcept?: string;
     lastOpenWidget?: string;
+    history: NavigationStep[];
 }
 
 export interface Data {
     concepts: { [key: string] : Concept };
     user: User;
+}
+
+export interface NavigationStep {
+    openScreen: Screen;
+    screenParameters: any;  
 }
 
 export interface WidgetAuthoring {

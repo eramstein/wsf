@@ -53,7 +53,7 @@
 <div class="main-bar">
     <div class="top-left" style="width: {filtersWidth-20}px">
         <div class="page-name">    
-            <Link screen={ Screen.Home } params={ null }>            
+            <Link screen={ Screen.Home } params={ null }>
                     {#if $State.ui.openScreen === Screen.Concept}
                         { capitalize($State.ui.screenParameters.concept) }
                     {/if}
@@ -88,6 +88,11 @@
             <Link screen={ Screen.Instance } params={ { concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Mashups } }>
                 <div class="tab" class:selected="{ $State.ui.screenParameters.widget === InstanceScreen.Mashups }">                
                     Mashups                
+                </div>
+            </Link>
+            <Link screen={ Screen.Instance } params={ { concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Relations } }>
+                <div class="tab" class:selected="{ $State.ui.screenParameters.widget === InstanceScreen.Relations }">                
+                    Relations                
                 </div>
             </Link>
             <Link screen={ Screen.Instance } params={ { concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Articles } }>

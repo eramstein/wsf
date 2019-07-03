@@ -43,7 +43,7 @@
     let container;
     let shadowRoot;   
     
-    afterUpdate(() => {
+    afterUpdate(() => {        
 
         if (!shadowRoot) {
             shadowRoot = container.attachShadow({mode: 'open'});

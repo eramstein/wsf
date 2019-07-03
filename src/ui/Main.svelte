@@ -9,8 +9,9 @@
     import Cards from './conceptsMany/Cards.svelte';
     import Filters from './conceptsMany/Filters.svelte';
     import Mashup from './conceptsOne/Mashup.svelte';
+    import Relations from './conceptsOne/Relations.svelte';
     import WidgetAuthoring from './widgetAuthoring/WidgetAuthoring.svelte';
-    import { LEFT_BAR_WIDTH } from '../constants';
+    import { LEFT_BAR_WIDTH } from '../constants';   
 
 </script>
 
@@ -79,6 +80,11 @@
         {#if $State.ui.openScreen === Screen.Instance}
             {#if $State.ui.screenParameters.widget === InstanceScreen.Mashups}
                 <Mashup />
+            {:else if $State.ui.screenParameters.widget === InstanceScreen.Relations}
+                <Relations
+                    conceptRelations={$State.data.concepts[$State.ui.screenParameters.concept].relations}
+                    item={$State.data.concepts[$State.ui.screenParameters.concept].items[$State.ui.screenParameters.instance]}
+                />
             {/if}
         {/if}
 

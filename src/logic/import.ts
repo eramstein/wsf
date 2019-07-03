@@ -92,8 +92,8 @@ export function csvIntoRelations(csv: any) : RelationToPush[] {
         const relationToPush = <RelationToPush>{};
         const currentline = lines[i].split(",");
         relationToPush.relation = currentline[0];
-        relationToPush.object = currentline[1];
-        relationToPush.subject = currentline[2];
+        relationToPush.object = currentline[1].replace(/(\r\n|\n|\r)/gm, "");
+        relationToPush.subject = currentline[2].replace(/(\r\n|\n|\r)/gm, "");
         if (headers.length > 3) {
             for(let j=3;j<headers.length;j++){
                 if (j === 3) {

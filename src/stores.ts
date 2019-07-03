@@ -1,7 +1,7 @@
 import { get, writable } from "svelte/store";
 import { handleKeyPress } from "./keybinds";
 import { FullState, Screen, WidgetAuthoring } from "./model";
-import { mutateStateAfterNavigation } from "./logic/navigation";
+import { mutateStateAfterNavigation, goBack } from "./logic/navigation";
 import { defineCustomElements } from "./logic/customElements.js";
 
 export const State = createFullState();
@@ -17,7 +17,9 @@ function createFullState() {
         set,
         initialize: () => set(getNewState()),
         load: data => set(data),
-        goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s); saveState(); return s; }),
+        goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s, false); saveState(); return s; }),
+        goBack: () => update(s => { goBack(s); saveState(); return s; }),
+        resetUI: () => update(s => { s.ui = getNewState().ui; saveState(); return s; }),
         
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; s.data.user.preferences.concepts[concept.name] = {lists: [], mashups: [], filters: {}}; saveState(); return s; }),
         filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
@@ -67,6 +69,7 @@ function getNewState(): FullState {
                 chartType: null,
             },
             widgetAuthoring: null,
+            history: [],
         },
     };
 }
@@ -127,3 +130,10 @@ export function resetState() {
 }
 
 window.onkeypress = handleKeyPress;
+
+history.pushState(null, document.title, location.href);
+window.addEventListener('popstate', function (event)
+{
+  history.pushState(null, document.title, location.href);
+  State.goBack();  
+});

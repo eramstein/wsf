@@ -1,6 +1,7 @@
 import { get } from "svelte/store";
 import { State, printState, saveState } from "./stores";
 import { Cardinality } from "./model";
+import { goBack } from "./logic/navigation";
 
 export function handleKeyPress(event) {
     // l -> log state
@@ -14,9 +15,9 @@ export function handleKeyPress(event) {
     // }
 
     // // t -> temp function
-    if (event.charCode === 116) {
-        //State.deleteConcept('players');
-    }    
+    // if (event.charCode === 116) {
+    //     State.goBack();
+    // }    
 }
 
 

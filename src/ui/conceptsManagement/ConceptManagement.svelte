@@ -11,6 +11,7 @@
         return false;
     }
 
+    // TODO: slow
     function loadRelations(e) {
         e.preventDefault();
 

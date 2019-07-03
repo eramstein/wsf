@@ -9,7 +9,7 @@
 
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     let instance = concept.items[$State.ui.screenParameters.instance];
-    const allWidgets = Object.keys(concept.widgets.one);
+    const allWidgets = Object.keys(concept.widgets.one);    
     
     let showConfig = false;
 
