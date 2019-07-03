@@ -1,8 +1,6 @@
 // NOTE: this is a JS file instead of TS to avoid transpiling issues
 
 export function defineCustomElements(d) {
-    console.log('defineCustomElements', d);
-
     Object.values(d).forEach(concept => {
         Object.values(concept.widgets.one).forEach(widget => {
             if (widget.nestable) {
@@ -41,6 +39,5 @@ export function defineCustomElements(d) {
                 });
             }
         });
-    });    
-
+    });
 }

@@ -14,7 +14,7 @@ display: flex;
 
 (() => {
 
-const manaCost = data['Mana Cost'] ||data.manacost;
+const manaCost = data['Mana Cost'] || data.manacost;
 
 if (!manaCost) {
     return {

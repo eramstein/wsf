@@ -20,7 +20,7 @@
             const reader = new FileReader();
             reader.onload = function (e) {
                 const data = e.target.result;
-                const relations = csvIntoRelations(data);                
+                const relations = csvIntoRelations(data);                             
                 relations.forEach(r => {
                     State.addRelation(concept.name, r.object, r.relation, r.subject, r.qualifiers);
                 });                

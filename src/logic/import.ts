@@ -85,7 +85,7 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
 // - each subsequent column is a qualifier
 export function csvIntoRelations(csv: any) : RelationToPush[] {
     const lines=csv.split("\n");
-    const headers = lines[0].split(",");
+    const headers = lines[0].split(",").map(h => h.replace(/(\r\n|\n|\r)/gm, ""));
     const result = [];
 
     for(let i=1;i<lines.length;i++){
@@ -98,7 +98,7 @@ export function csvIntoRelations(csv: any) : RelationToPush[] {
             for(let j=3;j<headers.length;j++){
                 if (j === 3) {
                     relationToPush.qualifiers = {};
-                }
+                }                
                 relationToPush.qualifiers[headers[j]] =  currentline[j];           
             }
         }        

@@ -51,6 +51,10 @@
 
     afterUpdate(() => {
         
+        if (!widget) {
+            return false;
+        }        
+        
         if (widget.width.indexOf('cols') >= 0) {
             columns = Math.max(1, Math.floor(GRID_COLUMNS / widget.width.slice(0, -4)));
         } else if (widget.width.indexOf('px') >= 0) {
@@ -146,19 +150,21 @@
         </div>
     </div>
 
-    <div class="cards"
-        style="grid-auto-rows: minmax(100px, {widget.height*1+24}px);
-               grid-template-columns: repeat({columns}, 1fr);"
-    >
-        {#each items as entity (entity[idAttribute]) }
-            <div class="card"
-                style="min-height: minmax(100px, {widget.height}px);">
-                <Widget
-                    template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ entity }
-                />
-            </div>
-        {/each}
-    </div>
+    {#if widget }
+        <div class="cards"
+            style="grid-auto-rows: minmax(100px, {widget.height*1+24}px);
+                grid-template-columns: repeat({columns}, 1fr);"
+        >
+            {#each items as entity (entity[idAttribute]) }
+                <div class="card"
+                    style="min-height: minmax(100px, {widget.height}px);">
+                    <Widget
+                        template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ entity }
+                    />
+                </div>
+            {/each}
+        </div>
+    {/if}
 
 </div>
 
