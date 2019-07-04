@@ -63,16 +63,38 @@ const MAX_BUBBLE_SIZE = 50;
 const DEFAULT_BUBBLE_SIZE = 10;
 const MAX_PLATE_HEIGHT = 100;
 
-export const bubbleChart = function() {
+function onCanvasClick(canvas, evt, onBubbleClick, bubbles : Bubble[]) {
+    evt.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const pos = {
+        x: evt.clientX - rect.left,
+        y: evt.clientY - rect.top
+    };
+    const clickedBubbles = bubbles.filter(b =>
+        pos.x < b.x + b.width &&
+        pos.x > b.x &&
+        pos.y < b.y + b.height &&
+        pos.y > b.y 
+    );
+    if (clickedBubbles.length > 0) {
+        onBubbleClick(clickedBubbles[0].id);
+    } else {
+        onBubbleClick(null);
+    }
+}
+
+export const bubbleChart = function(onBubbleClick) {
     const canvas = <HTMLCanvasElement> document.getElementById("canvas");
     // TODO: use webgl (30 FPS with 15K bubbles, acceptable but not great)
     const ctx = canvas.getContext('2d');
     canvas.style.width ='100%';
     canvas.width  = canvas.offsetWidth;
-    canvas.height = document.body.clientHeight - 110; // TODO: magic number which is the 2 menus height on top    
+    canvas.height = document.body.clientHeight - 110; // TODO: magic number which is the 2 menus height on top
+    canvas.oncontextmenu = canvas.onclick = e => onCanvasClick(canvas, e, onBubbleClick, bubbles);
     
     const margin = { top: 40, right: 20, bottom: 20, left: 20 };
 
+    let bubbles : Bubble[] = [];
     let oldBubblesValues : { [key: string] : Bubble } = {};
 
     const helpers = <Helpers>{
@@ -96,10 +118,7 @@ export const bubbleChart = function() {
     };
 
     this.update = function(data : [any], config : ChartConfig, attributes : { [key: string] : Attribute }) {
-        console.log('UPDATE CHART');
-
-        console.log(config);
-        
+        console.log('UPDATE CHART');        
 
         ctx.clearRect(0, 0, canvas.width, canvas.height);        
 
@@ -108,7 +127,7 @@ export const bubbleChart = function() {
         const identifier = Object.entries(attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
         let sizeRange;
         let colorIndex = 0;
-        let bubbles : Bubble[] = [];
+        
 
         // HELPERS
         if (type1 === DataType.Numeric && type2 === DataType.Numeric) {
@@ -143,9 +162,11 @@ export const bubbleChart = function() {
 
         if (config.colorBy) {
             bubbles.sort((a, b) => a.data[config.colorBy].localeCompare(b.data[config.colorBy]) );
-        } else {
+        } else if (type1 === DataType.Categorical) {            
             bubbles.sort((a, b) => a.data[config.posBy1].localeCompare(b.data[config.posBy1]) );
-        }        
+        } else if (type2 === DataType.Categorical) {            
+            bubbles.sort((a, b) => a.data[config.posBy2].localeCompare(b.data[config.posBy2]) );
+        }         
         
         // BUBBLES - init, set color and size
         bubbles = data.map(d => {
@@ -422,7 +443,7 @@ function getPlatesChartHelpers(data, config: ChartConfig, helpers : Helpers, ide
     
     Object.values(plates).sort(sorting).forEach((p, i) => {
         p.xPos = axisSize.left + p.xPos * plateWidth;
-        p.yPos = margin.top + p.yPos * plateHeight + (isBarChart ? i : 0);
+        p.yPos = margin.top + p.yPos * plateHeight + (isBarChart ? i*5 : 0);
         p.width = plateWidth;
         p.height = plateHeight;
         p.weightRelative = p.weight / maxWeight;

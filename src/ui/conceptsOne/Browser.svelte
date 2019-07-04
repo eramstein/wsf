@@ -1,10 +1,7 @@
-<script>
-    import { afterUpdate } from 'svelte';
-    import { Screen, InstanceScreen, DataType } from '../../model';
-    import { LEFT_BAR_WIDTH } from '../../constants';
+<script>    
     import { State } from '../../stores';
+    import { Screen, InstanceScreen } from '../../model';
     import Link from '../Link.svelte';
-    import { getDefaultConfig, getNewMashup, addDefaultIfNeeded, getLayoutSimplified } from './Mashup';
     import Widget from "../Widget.svelte";
     import Relations from "./Relations.svelte";
  
@@ -15,7 +12,7 @@
     const DEFAULT_WIDGET = 'Default View';
     const RELATIONS_WIDGET = 'Relations';
 
-    let data = $State.data.concepts[concept].items[item];
+    $: data = $State.data.concepts[concept].items[item];
     let widgets = Object.values($State.data.concepts[concept].widgets.one);
 
     if (!widgets || widgets.length === 0) {
@@ -66,8 +63,10 @@
     }
     .nav div {
         font-weight: bold;
-        padding: 3px;
+        padding-right: 8px;
         cursor: pointer;
+        font-family: monospace;
+        font-size: 21px;
     }
     .field {
         margin-bottom: 3px;
@@ -76,6 +75,15 @@
         font-weight: bold;
         padding-right: 20px;
         min-width: 100px;
+    }
+    .drilldown {
+        position: absolute;
+        top: 5px;
+        left: 20px;
+        font-weight: bold;
+        cursor: pointer;
+        font-family: monospace;
+        font-size: 22px;
     }
 </style>
 
@@ -91,6 +99,11 @@
                 &gt;
             </div>
         </div>
+        <div class="drilldown">
+            <Link  screen={ Screen.Instance } params={ { concept: concept , instance: item, widget: InstanceScreen.Mashups } }>
+                &#x25BE;
+            </Link>
+        </div>
     </div>
     <div class="content">
         {#if currentWidget !== RELATIONS_WIDGET && currentWidget !== DEFAULT_WIDGET }
@@ -101,13 +114,13 @@
         {#if currentWidget === RELATIONS_WIDGET }
             <Relations concept={ concept } item={ item } />
         {/if}
-        {#if currentWidget === DEFAULT_WIDGET }
-            <div class="field">
-                {#each Object.entries(data) as field }
+        {#if currentWidget === DEFAULT_WIDGET }            
+            {#each Object.entries(data) as field }
+                <div class="field">
                     <span class="field-title">{field[0]}</span>
                     <span>{field[1]}</span>
-                {/each}
-            </div>
+                </div>
+            {/each}            
         {/if}
     </div>
     

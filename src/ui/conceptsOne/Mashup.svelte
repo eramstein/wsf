@@ -7,16 +7,16 @@
     import { getDefaultConfig, getNewMashup, addDefaultIfNeeded, getLayoutSimplified } from './Mashup';
     import Widget from "../Widget.svelte";
 
-    let concept = $State.data.concepts[$State.ui.screenParameters.concept];
-    let instance = concept.items[$State.ui.screenParameters.instance];
-    const allWidgets = Object.keys(concept.widgets.one);    
+    $: concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    $: instance = concept.items[$State.ui.screenParameters.instance];
+    $: allWidgets = Object.keys(concept.widgets.one);    
     
     let showConfig = false;
 
-    const defaultPrefs = $State.data.user.preferences.concepts[concept.name];
-    const defaultMashups = defaultPrefs && defaultPrefs.mashups;
+    $: defaultPrefs = $State.data.user.preferences.concepts[concept.name];
+    $: defaultMashups = defaultPrefs && defaultPrefs.mashups;
 
-    let config = getDefaultConfig(concept.widgets.one, defaultMashups);
+    $: config = getDefaultConfig(concept.widgets.one, defaultMashups);
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
     $: mashups = preferences && preferences.mashups && preferences.mashups.length > 0 ? preferences.mashups : [config];

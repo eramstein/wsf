@@ -1,11 +1,30 @@
 <script>
     import { State } from '../stores';
-    import { Screen, ConceptScreen, InstanceScreen } from '../model';
+    import { Screen, ConceptScreen, InstanceScreen, DataType } from '../model';
     import { capitalize } from '../utils';
     import Link from './Link.svelte'
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
     const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + FILTER_VALUE_PADDING;
+
+    function goToInstance(v) {
+        const concept = $State.data.concepts[$State.ui.lastOpenConcept];
+        const identifier = Object.entries(concept.attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
+        const index = $State.ui.filteredItems.map(i => i[identifier]).indexOf($State.ui.screenParameters.instance);
+        let targetIndex = index + v;
+        if (targetIndex < 0) {
+            targetIndex = $State.ui.filteredItems.length - 1;
+        }
+        if (targetIndex >= $State.ui.filteredItems.length) {
+            targetIndex = 0;
+        }
+        const targetInstance = $State.ui.filteredItems[targetIndex][identifier];                
+        State.goTo(
+            Screen.Instance,
+            { concept: $State.ui.lastOpenConcept, instance: targetInstance, widget: $State.ui.screenParameters.widget }
+        );
+    }
+
 </script>
 
 <style>
@@ -48,20 +67,38 @@
         text-align: center;
         flex-grow: 1;
     }
+    .instance-browser {
+        display: flex;
+        justify-content: space-between;
+        padding-right: 20px;
+        align-items: center;
+    }
+    .instance-arrow {
+        font-weight: bold;
+        padding-right: 8px;
+        cursor: pointer;
+        font-family: monospace;
+        font-size: 21px;
+    }
 </style>
 
 <div class="main-bar">
     <div class="top-left" style="width: {filtersWidth-20}px">
-        <div class="page-name">    
-            <Link screen={ Screen.Home } params={ null }>
-                    {#if $State.ui.openScreen === Screen.Concept}
-                        { capitalize($State.ui.screenParameters.concept) }
-                    {/if}
-                    {#if $State.ui.openScreen === Screen.Instance}
-                        { capitalize($State.ui.screenParameters.instance) }
-                    {/if}
-                
-            </Link>
+        <div class="page-name">            
+            {#if $State.ui.openScreen === Screen.Concept}
+                <Link screen={ Screen.Home } params={ null }>
+                    { capitalize($State.ui.screenParameters.concept) }
+                </Link>
+            {/if}
+            {#if $State.ui.openScreen === Screen.Instance}
+                <div class="instance-browser">
+                    <div class="instance-arrow" on:click={ () => goToInstance(-1) }>&lt;</div>
+                    <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
+                        <div>{ capitalize($State.ui.screenParameters.instance) }</div>
+                    </Link>
+                    <div class="instance-arrow" on:click={ () => goToInstance(1) }>&gt;</div>
+                </div>                                
+            {/if}
         </div>
     </div>
     <div class="menu">
