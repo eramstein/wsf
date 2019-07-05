@@ -84,7 +84,12 @@
 
 <div class="main-bar">
     <div class="top-left" style="width: {filtersWidth-20}px">
-        <div class="page-name">            
+        <div class="page-name">
+            {#if $State.ui.openScreen === Screen.Article}
+                <Link screen={ Screen.Articles } params={ null }>
+                    { $State.data.articles[$State.ui.screenParameters.articleID].title }
+                </Link>
+            {/if}          
             {#if $State.ui.openScreen === Screen.Concept}
                 <Link screen={ Screen.Home } params={ null }>
                     { capitalize($State.ui.screenParameters.concept) }
@@ -102,6 +107,19 @@
         </div>
     </div>
     <div class="menu">
+
+        {#if $State.ui.openScreen === Screen.Home || $State.ui.openScreen === Screen.Concepts || $State.ui.openScreen === Screen.Articles }
+            <Link screen={ Screen.Concepts } params={{}}>
+                <div class="tab" class:selected="{ $State.ui.openScreen === Screen.Concepts }">                
+                    Concepts                
+                </div>
+            </Link>
+            <Link screen={ Screen.Articles } params={{}}>
+                <div class="tab" class:selected="{ $State.ui.openScreen === Screen.Articles }">             
+                    Articles                
+                </div>
+            </Link>
+        {/if}
 
         {#if $State.ui.openScreen === Screen.Concept}
             <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>

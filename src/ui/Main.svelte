@@ -3,6 +3,8 @@
     import { Screen, ConceptScreen, InstanceScreen } from '../model';
     import MainBar from './MainBar.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
+    import Articles from './articles/Articles.svelte';
+    import Article from './articles/Article.svelte';
     import ConceptManagement from './conceptsManagement/ConceptManagement.svelte';
     import List from './conceptsMany/List.svelte';
     import Chart from './conceptsMany/Chart.svelte';
@@ -52,6 +54,14 @@
 
         {#if $State.ui.openScreen === Screen.Home || $State.ui.openScreen === Screen.Concepts}
             <Concepts concepts={$State.data.concepts} />
+        {/if}
+
+        {#if $State.ui.openScreen === Screen.Articles}
+            <Articles />
+        {/if}
+
+        {#if $State.ui.openScreen === Screen.Article}
+            <Article />
         {/if}
 
         {#if $State.ui.openScreen === Screen.Concept}

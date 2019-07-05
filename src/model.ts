@@ -7,6 +7,7 @@ export enum Screen {
     Concept = "CONCEPT",
     Instance = "INSTANCE",
     Articles = "ARTICLES",
+    Article = "ARTICLE",
     WidgetAuthoring = "WIDGET_AUTHORING",
 }
 
@@ -54,7 +55,15 @@ export interface UI {
 
 export interface Data {
     concepts: { [key: string] : Concept };
+    articles: { [key: string] : Article };
     user: User;
+}
+
+export interface Article {
+    id: string;
+    title: string;
+    aboutItems: { concept: string; item: string; }[];
+    content: string;
 }
 
 export interface NavigationStep {

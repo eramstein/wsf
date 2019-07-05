@@ -42,6 +42,7 @@ function createFullState() {
             item.__relations__[relation].push({ item: subject, qualifiers: qualifiers });
             saveState(); return s;
         }),
+        updateArticle: (id, content) => update(s => { s.data.articles[id] = content; saveState(); return s; }),
     };
 }
 
@@ -55,6 +56,7 @@ function getNewState(): FullState {
                     concepts: {},
                 },
             },
+            articles: {},
         },
         ui: {
             openScreen: Screen.Home,

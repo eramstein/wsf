@@ -15,12 +15,8 @@ export function handleKeyPress(event) {
     // }
 
     // // t -> temp function
-    if (event.charCode === 116) {
-        // State.goTo(
-        //     "CONCEPT",
-        //     { concept: 'cards', widget: 'LISTS' }
-        // );
-    }    
+    // if (event.charCode === 116) {
+    // }    
 }
 
 
