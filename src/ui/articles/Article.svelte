@@ -7,6 +7,7 @@
 
     let editMode = true;
     let shadowRoot;
+    let stylesAdded = false;
     
     onMount(() => {
         const editor = document.getElementById('editor');
@@ -18,22 +19,30 @@
                 document.execCommand('insertHTML', false, '\u00a0\u00a0\u00a0\u00a0');
             }
             // enter key
-            // if (e.keyCode === 13) {
-            //     console.log('enter mofo');
-            //     document.execCommand('insertHTML', false, '\n\n');
-            // }
+            if (e.keyCode === 13) {
+                document.execCommand('insertText', false, '\n');
+            }
         }
         shadowRoot = preview.attachShadow({mode: 'open'});
     });
 
     afterUpdate(() => {
-        console.log('AFTER UPDATE', editMode);
         if (editMode) {            
             document.getElementById('editor').innerText = article.content;
         } else {
-            console.log(article.content);
-            
-            shadowRoot.innerHTML = article.content;
+            let filledTemplate = article.content.replace(/\n/g, '<br />');
+            if (!stylesAdded) {
+                filledTemplate += `
+                    <style>
+                        .inline {
+                            display:inline;
+                            width:auto;
+                        }
+                    </style>
+                `;
+                stylesAdded = true;
+            }
+            shadowRoot.innerHTML = filledTemplate;
         }
     });
 
@@ -46,6 +55,14 @@
         });
         editMode = false;
     }
+
+    /*
+
+    to display a component inline, wrap it in a div:
+    display:inline-block;
+    width:auto;
+
+    */
 
 </script>
 

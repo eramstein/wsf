@@ -28,7 +28,7 @@ export function defineCustomElements(d) {
                                 return allData[p1];                
                             }        
                             filledTemplate = template.replace(/{{(.+?)}}/g, replacer);
-                        }        
+                        }
                         
                         if (computedNode) {
                             shadowRoot.appendChild(createdNode);

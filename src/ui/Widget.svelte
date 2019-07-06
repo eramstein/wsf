@@ -71,7 +71,7 @@
             shadowRoot.appendChild(createdNode);
         } else {
             shadowRoot.innerHTML = filledTemplate;
-        }
+        }        
         
 	});
 
