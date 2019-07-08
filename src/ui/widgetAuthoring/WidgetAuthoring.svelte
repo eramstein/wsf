@@ -9,6 +9,7 @@
             inMashups: true,
             inLists: false,
             nestable: false,
+            props: '',            
         },        
     };
 
@@ -30,6 +31,9 @@
             widgetAuthoring.script = null;
         } else {
             widgetAuthoring.computedNode = null;
+        }
+        if (widgetAuthoring.widget.props.length > 0) {
+            widgetAuthoring.widget.props = widgetAuthoring.widget.props.replace(/ /g,'_').split(',');
         }
         State.deleteWidget(initialName);
         State.saveWidget();
@@ -101,15 +105,21 @@
             </div>
             <div>
                 <span>            
-                    Width (px or cols)
+                    W
                 </span>
-                <input bind:value={widgetAuthoring.widget.width} style="width:80px">
+                <input bind:value={widgetAuthoring.widget.width} style="width:80px" placeholder="Width (px or cols)">
             </div>
             <div>
                 <span>            
-                    Height (px)
+                    H
                 </span>
-                <input bind:value={widgetAuthoring.widget.height} style="width:80px">
+                <input bind:value={widgetAuthoring.widget.height} style="width:80px" placeholder="Height (px)">
+            </div>
+            <div>
+                <span>            
+                    Props
+                </span>
+                <input bind:value={widgetAuthoring.widget.props} style="width:280px">
             </div>
             <div>
                 <label>
@@ -123,11 +133,19 @@
             </div>
             <div>
                 {#if !fullAuthoring}
-                <label>
-                    <input type=checkbox bind:checked={includeScripts}>
-                    Include Scripts
-                </label>
+                <div>
+                    <label>
+                        <input type=checkbox bind:checked={includeScripts}>
+                        Include Scripts
+                    </label>
+                </div>
                 {/if}
+                <div>
+                    <label>
+                        <input type=checkbox bind:checked={widgetAuthoring.widget.nestable}>
+                        Nestable
+                    </label>
+                </div>
             </div>
             <div>
                 <div>
@@ -142,13 +160,7 @@
                         In Lists
                     </label>
                 </div>
-            </div>
-            <div>
-                <label>
-                    <input type=checkbox bind:checked={widgetAuthoring.widget.nestable}>
-                    Nestable
-                </label>
-            </div>
+            </div>            
         </div>
         <div class="buttons">
             <div>

@@ -107,6 +107,7 @@ export interface Widget {
     inMashups: boolean;
     inLists: boolean;
     nestable: boolean;
+    props?: string[];
 }
 
 export interface ConceptRelation {

@@ -8,6 +8,31 @@
     let editMode = true;
     let shadowRoot;
     let stylesAdded = false;
+    let searchString = null;
+    let selectedWidget = null;
+    let contentInserted = false;
+
+    let widgets = [];
+    let widgetsFound = [];
+
+    let propsValues = {};
+    
+    Object.values($State.data.concepts).forEach(c => {
+        Object.values(c.widgets.one).forEach(w => {
+            widgets.push(w);
+        });
+        Object.values(c.widgets.many).forEach(w => {
+            widgets.push(w);
+        });
+    });
+
+    $: {
+        if (!searchString || searchString.length === 0) {
+            widgetsFound = [];
+        } else {
+            widgetsFound = widgets.filter(w => w.name.toLowerCase().indexOf(searchString) >= 0);
+        }        
+    }
     
     onMount(() => {
         const editor = document.getElementById('editor');
@@ -27,8 +52,9 @@
     });
 
     afterUpdate(() => {
-        if (editMode) {            
+        if (editMode && !contentInserted) {
             document.getElementById('editor').innerText = article.content;
+            contentInserted = true;
         } else {
             let filledTemplate = article.content.replace(/\n/g, '<br />');
             if (!stylesAdded) {
@@ -55,14 +81,38 @@
         });
         editMode = false;
     }
+    
+    function selectWidget(widget) {      
+        widgetsFound = [];
+        selectedWidget = widget;
+        
+        if (!widget.props || widget.props.length === 0) {
+            insertWidget();
+        } else {
+            widget.props.forEach(p => {
+                propsValues[p] = null;
+            });
+        }
+    }
 
-    /*
+    function insertWidget() {
+        const widgetTag = 'wsf-' + selectedWidget.name.toLowerCase().replace(/ /g, '-');
+        const propsText = Object.entries(propsValues).reduce((agg, curr) => {
+            agg += ' data-' + curr[0] + '="' + curr[1] + '"';
+            return agg;
+        }, '');
+        const fullText = '<' + widgetTag + propsText + '></' + widgetTag + '>';
+        document.getElementById('editor').innerText += fullText;
 
-    to display a component inline, wrap it in a div:
-    display:inline-block;
-    width:auto;
+        propsValues = {};
+        selectedWidget = null;
+    }
 
-    */
+    function startEditing() {      
+        searchString = null;
+        contentInserted = false;
+        editMode = true;
+    }
 
 </script>
 
@@ -76,6 +126,9 @@
         display: flex;
         justify-content: space-between;
     }
+    .top-bar-left {
+        display: flex;
+    }
     #editor {
         height: calc(100% - 120px);
         width: calc(100% - 10px);
@@ -85,17 +138,70 @@
     .preview-options div{
         float: right;
     }
+    .title {
+        padding-right: 20px;
+    }
+    .widgets {
+        position: relative;
+    }
+    .widgets-input {
+        margin-bottom: 0;
+    }
+    .results{
+        position: absolute;
+        background-color: #f9f9f9;
+        border: 1px solid #ccc;
+        padding: 5px 20px;
+        left: 2px;
+    }
+    .prop {
+        padding: 5px 0px;
+    }
+    .widget-result {
+        padding: 5px 5px;
+        cursor: pointer;
+    }
+    .widget-result:hover {
+        background-color: #eee;
+    }
 </style>
 
 <div class="article">
 
     {#if editMode}
-        <div class="top-bar" >
-            <div class="title" >
-                Title
-                <input bind:value={ title }>
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="title">
+                    Title
+                    <input bind:value={ title } style="width: 400px">
+                </div>
+                <div class="widgets">
+                    Widgets
+                    <input class="widgets-input"
+                        bind:value={ searchString }
+                        style="width: 400px">
+                    {#if widgetsFound.length > 0}
+                    <div class="results" style="width: 400px;left: 60px">
+                        {#each widgetsFound as widget (widget.name) }
+                            <div class="widget-result" on:click={ () => selectWidget(widget) }>
+                                { widget.name }
+                            </div>        
+                        {/each}
+                    </div>
+                    {/if}
+                    {#if selectedWidget && selectedWidget.props && selectedWidget.props.length > 0}
+                    <div class="results" style="width: 400px;left: 60px">
+                        {#each selectedWidget.props as prop }
+                            <div class="prop">
+                                { prop } <input bind:value={ propsValues[prop] }>
+                            </div>        
+                        {/each}
+                        <button on:click={ () => { insertWidget() }}>Insert</button>
+                    </div>
+                    {/if}
+                </div>
             </div>
-            <div class="save" >            
+            <div class="save">            
                 <button on:click={ save }>Save</button>
             </div>
         </div>
@@ -106,7 +212,7 @@
 
     {#if !editMode}
         <div class="preview-options">
-            <div><button on:click={ () => { editMode = true } }>Edit</button></div>
+            <div><button on:click={ () => startEditing() }>Edit</button></div>
         </div>
     {/if}
     <div id="preview">
