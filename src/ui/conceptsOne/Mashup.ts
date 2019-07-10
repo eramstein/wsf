@@ -1,5 +1,6 @@
 import { MashupConfig, Widget } from "../../model";
 import { GRID_COLUMNS } from "../../constants";
+import { getNewID } from "../../utils";
 
 interface WidgetPosition {
     x: number;
@@ -32,10 +33,6 @@ export function getDefaultConfig(widgets : { [key: string] : Widget }, mashups :
     }
     return mashups[0];
 };
-
-function getNewID() : number {
-    return Math.floor(Math.random() * 1000000000000);
-}
 
 export function addDefaultIfNeeded(oldMashups : MashupConfig[], mashupConfig : MashupConfig) : MashupConfig[] {
     const isDefault = mashupConfig.id === 0 ? true : false;

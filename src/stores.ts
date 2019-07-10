@@ -43,6 +43,7 @@ function createFullState() {
             saveState(); return s;
         }),
         updateArticle: (id, content) => update(s => { s.data.articles[id] = content; saveState(); return s; }),
+        deleteArticle: (id) => update(s => { delete s.data.articles[id]; saveState(); return s; }),
     };
 }
 

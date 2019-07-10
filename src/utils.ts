@@ -93,3 +93,7 @@ export function getUniqueValues(vals, attr) {
 export function capitalize(name : string) : string {
     return name.charAt(0).toUpperCase() + name.slice(1);
 }
+
+export function getNewID() : number {
+    return Math.floor(Math.random() * 1000000000000);
+}

@@ -95,6 +95,8 @@
                     conceptRelations={$State.data.concepts[$State.ui.screenParameters.concept].relations}
                     item={$State.data.concepts[$State.ui.screenParameters.concept].items[$State.ui.screenParameters.instance]}
                 />
+            {:else if $State.ui.screenParameters.widget === InstanceScreen.Articles}
+                <Articles />
             {/if}
         {/if}
 

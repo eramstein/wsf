@@ -1,4 +1,5 @@
 import { DataType, ConceptPreferences, ListConfig, Column, Widget } from "../../model";
+import { getNewID } from "../../utils";
 
 const PAGE_SIZE = 60;
 
@@ -132,10 +133,6 @@ export function getNewList(attributes) : ListConfig {
         widgets: {},
         pages: 1,
     }
-}
-
-function getNewID() : number {
-    return Math.floor(Math.random() * 1000000000000);
 }
 
 export function getSortArrowClass(attribute, config : ListConfig) : string {

@@ -87,7 +87,11 @@
         <div class="page-name">
             {#if $State.ui.openScreen === Screen.Article}
                 <Link screen={ Screen.Articles } params={ null }>
-                    { $State.data.articles[$State.ui.screenParameters.articleID].title }
+                    { $State.ui.screenParameters.articleID ?
+                      $State.data.articles[$State.ui.screenParameters.articleID].title
+                      :
+                      'Articles List'
+                    }
                 </Link>
             {/if}          
             {#if $State.ui.openScreen === Screen.Concept}

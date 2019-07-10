@@ -3,14 +3,15 @@
     import { State } from '../../stores';
 
     $: article = $State.data.articles[$State.ui.screenParameters.articleID];
-    $: title = article.title;
-
+    
+    let titleValue;
     let editMode = true;
     let shadowRoot;
     let stylesAdded = false;
     let searchString = null;
     let selectedWidget = null;
     let contentInserted = false;
+    let titleInserted = false;
 
     let widgets = [];
     let widgetsFound = [];
@@ -52,6 +53,10 @@
     });
 
     afterUpdate(() => {
+        if (!titleInserted) {
+            titleValue = article.title;
+            titleInserted = true;
+        }
         if (editMode && !contentInserted) {
             document.getElementById('editor').innerText = article.content;
             contentInserted = true;
@@ -76,7 +81,7 @@
         State.updateArticle(article.id, {
             id: article.id,
             aboutItems: article.aboutItems,
-            title: title,
+            title: titleValue,
             content: document.getElementById('editor').innerText,
         });
         editMode = false;
@@ -173,7 +178,7 @@
             <div class="top-bar-left">
                 <div class="title">
                     Title
-                    <input bind:value={ title } style="width: 400px">
+                    <input bind:value={ titleValue } style="width: 400px">
                 </div>
                 <div class="widgets">
                     Widgets
