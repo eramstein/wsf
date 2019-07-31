@@ -110,7 +110,7 @@
     }
 </style>
 
-{#if spread.min !== spread.max }
+{#if filters && spread.min !== spread.max }
     <div class="boxplot"
         on:mousedown={ e => { if (e.which === 1) { startDrag(e.offsetX); } }}
         on:mouseup={ e => { if (e.which === 1) { endDrag(e.offsetX); } }}

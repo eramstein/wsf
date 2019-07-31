@@ -33,7 +33,7 @@
             widgetAuthoring.computedNode = null;
         }
         if (widgetAuthoring.widget.props.length > 0) {
-            widgetAuthoring.widget.props = widgetAuthoring.widget.props.replace(/ /g,'_').split(',');
+            widgetAuthoring.widget.props = widgetAuthoring.widget.props.join(',').replace(/ /g,'_').split(',');
         }
         State.deleteWidget(initialName);
         State.saveWidget();

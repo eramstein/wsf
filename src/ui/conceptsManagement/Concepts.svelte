@@ -38,78 +38,79 @@
         height: 100%;
         background-color: #eee;
         padding: 10px;
-        box-sizing: border-box;
+        box-sizing: border-box;        
     }
     .concept {
         display: flex;
         flex-direction: column;        
-        border: 1px solid #ccc;
+        box-shadow: 0 2px 12px #b7c9dd;
         border-radius: 6px;        
         background-color: white;
-        min-height: 300px;        
+        min-height: 300px;
+        overflow: hidden;
+        transition: all .16s linear;
+        cursor: pointer;            
+    }
+    .concept:hover {
+        box-shadow: 0 4px 16px #8f99a5;
+        top: -1px;
+        position: relative;    
     }
     .name {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 80px;
-        color: steelblue;
-        height: 200px;
-        border-bottom: 1px solid #ccc;
+        font-size: 40px;
     }
     .stats {
         display: flex;
-        align-items: center;
-        height: 100px;
+        flex-direction: column;
+        align-self: flex-end;
+        height: 85px;
+        background-color: rgba(255, 255, 255, 0.8);
+        width: 100%;
+        bottom: 0;
+        left: 0;
+        position: absolute;
+        padding-left: 20px;
     }
-    .items, .metadata {
-        height: 100%;
-        width: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 26px;
-        color: steelblue;
-        cursor: pointer;
-    }
-    .items:hover, .metadata:hover {
-        background-color: rgb(250, 250, 250);
-    }
-    .items {
-        border-right: 1px solid #ccc;
-    }    
     .plus {
         font-size: 100px;
         color: steelblue;
         align-items: center;
         justify-content: center;
     }
+    .inside {
+        display: flex;
+        flex-direction: column;
+        min-height: 300px;
+        position: relative;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-position: center;  
+    }
 </style>
 
-<div class="concepts">
+<div class="concepts">    
+    {#each Object.values(concepts) as concept (concept.name) }        
+        <div class="concept">
+            <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Lists } }>
+                <div class="inside" style="background-image: url({concept.banner})">
+                    <div class="stats">
+                        <div class="name">                
+                            { Object.keys(concept.items).length.toLocaleString('fr', {useGrouping:true}) } { concept.name }
+                        </div>
+                        <div class="metadata">
+                            <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Management } }>
+                                { Object.keys(concept.attributes).length } attributes, { concept.relations.length.toLocaleString('fr', {useGrouping:true}) } relations
+                            </Link>
+                        </div>              
+                    </div>
+                </div>
+            </Link>        
+        </div>
+    {/each}
     <div class="concept plus" type="file"
         ondragenter="event.stopPropagation(); event.preventDefault();"
         ondragover ="event.stopPropagation(); event.preventDefault();"
         on:drop|preventDefault={ loadFile }>
         +
     </div>
-    {#each Object.values(concepts) as concept (concept.name) }        
-            <div class="concept">
-                <div class="name">                
-                    { concept.name }
-                </div>
-                <div class="stats">                               
-                    <div class="items">
-                        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Lists } }>
-                            { Object.keys(concept.items).length } items
-                        </Link>
-                    </div>
-                    <div class="metadata">
-                        <Link screen={ Screen.Concept } params={ { concept: concept.name, widget: ConceptScreen.Management } }>
-                            { Object.keys(concept.attributes).length } attributes
-                        </Link>
-                    </div>              
-                </div>
-            </div>        
-    {/each}
 </div>

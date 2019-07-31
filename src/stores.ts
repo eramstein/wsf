@@ -22,6 +22,7 @@ function createFullState() {
         resetUI: () => update(s => { s.ui = getNewState().ui; saveState(); return s; }),
         
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; s.data.user.preferences.concepts[concept.name] = {lists: [], mashups: [], filters: {}}; saveState(); return s; }),
+        saveConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
         filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
         updateConceptPreferences: (conceptName, preferences) => update(s => { s.data.user.preferences.concepts[conceptName] = preferences; saveState(); return s; }),
         updateConceptFilters: (conceptName, filters) => update(s => { s.data.user.preferences.concepts[conceptName].filters = filters; saveState(); return s; }),

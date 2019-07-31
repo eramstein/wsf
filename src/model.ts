@@ -79,6 +79,8 @@ export interface WidgetAuthoring {
 
 export interface Concept {
     name: string;
+    banner?: string;
+    icon?: string;
     attributes: { [key: string] : Attribute };
     items: { [key: string] : Item };
     widgets: {

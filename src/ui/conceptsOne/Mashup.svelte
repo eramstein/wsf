@@ -182,6 +182,7 @@
         grid-gap: 0px;
         background-color: #eee;
         padding: 0px;
+        width: 100%;
     }
     .card {
         border-right: 1px solid #ccc;
