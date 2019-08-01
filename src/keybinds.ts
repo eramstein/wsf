@@ -14,9 +14,9 @@ export function handleKeyPress(event) {
     //     saveState();
     // }
 
-    // t -> temp function
+    //t -> temp function
     // if (event.charCode === 116) {
-    //     State.deleteArticle('812094488110');
+    //     State.temp();
     // }    
 }
 

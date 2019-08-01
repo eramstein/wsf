@@ -25,10 +25,11 @@
         color: #333;
     }
     .top {
-        height: 40px;
+        height: 60px;
         flex: 0 1 auto;
     }
     .contents {
+        margin-top: 1px;
         flex: 1 1 auto;
     }
     .concept {

@@ -9,6 +9,7 @@ export enum Sorting {
 }
 
 export function getDefaultConfig(attributes, widgets : { [key: string] : Widget }, lists : ListConfig[]) : ListConfig {    
+    
     if (!lists || lists.length === 0) {
         return {
             id: 0,
@@ -16,7 +17,7 @@ export function getDefaultConfig(attributes, widgets : { [key: string] : Widget 
             sortBy: null,
             sortDirection: null,
             columns: getColumnsFromAttributes(attributes),
-            widgets: {},
+            widgets: getSparklinesFromWidgets(widgets),
             pages: 1,
         };
     }
@@ -88,6 +89,17 @@ export function getColumnsFromAttributes(attributes) : { [key: string] : Column 
     }, {});
 }
 
+export function getSparklinesFromWidgets(widgets : { [key: string] : Widget }) : { [key: string] : Widget } | {} {
+    const sparklines = Object.values(widgets).filter(w => w.inLists === true);
+    const result = {};
+    sparklines.forEach(s => {
+        if (result[s.name] === undefined) {
+            result[s.name] = false;
+        }
+    })
+    return result;
+}
+
 export function getColumnSorting(name, configuration) {
     const currentSorting = configuration.sortBy === name ? configuration.sortDirection : null;
     let direction = null;
@@ -123,14 +135,16 @@ export function saveListConfig(oldLists : ListConfig[], listConfig : ListConfig)
     return newLists;
 }
 
-export function getNewList(attributes) : ListConfig {
+export function getNewList(attributes, widgets) : ListConfig {
+    console.log(getSparklinesFromWidgets(widgets));
+    
     return {
         id: getNewID(),
         name: "New List",
         sortBy: null,
         sortDirection: null,
         columns: getColumnsFromAttributes(attributes),
-        widgets: {},
+        widgets: getSparklinesFromWidgets(widgets),
         pages: 1,
     }
 }

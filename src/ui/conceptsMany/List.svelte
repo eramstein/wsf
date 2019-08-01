@@ -5,15 +5,29 @@
     import Widget from "../Widget.svelte";
     import { sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
-    let concept = $State.data.concepts[$State.ui.screenParameters.concept];
-    let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
+    let configsPerConcept = {};
+
+    $: concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    $: idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
 
     let showConfig = false;
 
-    const defaultPrefs = $State.data.user.preferences.concepts[concept.name];
-    const defaultLists = defaultPrefs && defaultPrefs.lists;
+    $: defaultPrefs = $State.data.user.preferences.concepts[concept.name];
+    $: defaultLists = defaultPrefs && defaultPrefs.lists;
 
-    let config = getDefaultConfig(concept.attributes, concept.widgets.one, defaultLists);
+    let config;
+
+    $: {
+        if (!configsPerConcept[concept.name]) {
+            configsPerConcept[concept.name] = getDefaultConfig(concept.attributes, concept.widgets.one, defaultLists);            
+        }           
+    }
+
+    $: {
+        if (!showConfig) {
+            config = configsPerConcept[concept.name];
+        }        
+    }
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
     $: lists = preferences && preferences.lists && preferences.lists.length > 0 ? preferences.lists : [config];    
@@ -27,15 +41,17 @@
     }
 
     function saveConfig() {
+        const id = config.id;
         const newLists = saveListConfig(lists, config);
         let newPreferences = preferences || {};
         newPreferences.lists = newLists;
         State.updateConceptPreferences(concept.name, newPreferences);
         showConfig = false;
+        selectList(id);
     }
 
     function addList() {
-        const newList = getNewList(concept.attributes); 
+        const newList = getNewList(concept.attributes, concept.widgets.one); 
         let newPreferences = preferences || {};
         newPreferences.lists = newPreferences.lists.concat([newList]);
         config = newList;
@@ -278,7 +294,7 @@
         <tbody>            
             {#each items as item (item[idAttribute]) }
                 <tr on:click={ () => State.goTo(Screen.Instance, { concept: $State.ui.screenParameters.concept, instance: item[idAttribute], widget: InstanceScreen.Mashups }) }>
-                    {#each displayedWidgets as widget (widget) }
+                    {#each displayedWidgets as widget (widget.name) }
                         <td>
                             <Widget
                                 template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ item }

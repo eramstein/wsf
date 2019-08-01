@@ -4,7 +4,7 @@
     import FilterNumeric from './FilterNumeric.svelte';
     import { setFiltersData, setDefaultFilterConfig, toggleAttribute } from './Filters';    
 
-    let concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    $: concept = $State.data.concepts[$State.ui.screenParameters.concept];
     $: preferences = $State.data.user.preferences.concepts[$State.ui.screenParameters.concept];
     $: filters = preferences && preferences.filters;
     $: filteredItems = $State.ui.filteredItems;
@@ -56,7 +56,7 @@
             <div class="filter-name" on:click={ () => toggleAttribute(data.attribute) }>            
                 { data.attribute }
             </div>
-            <div style="display:{ filters[data.attribute].collapsed ? 'none': 'block'}">
+            <div style="display:{ filters[data.attribute] && filters[data.attribute].collapsed ? 'none': 'block'}">
             {#if data.type === "CATEGORICAL" }
                 <FilterCategorical attribute={data.attribute} categories={data.categories} filters={filters[data.attribute]} />
             {/if}

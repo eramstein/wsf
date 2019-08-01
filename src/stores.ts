@@ -17,6 +17,7 @@ function createFullState() {
         set,
         initialize: () => set(getNewState()),
         load: data => set(data),
+        //temp: () => update(s => { s.data.user.preferences.concepts.cards.lists = [s.data.user.preferences.concepts.cards.lists[0]]; saveState(); return s; }),
         goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s, false); saveState(); return s; }),
         goBack: () => update(s => { goBack(s); saveState(); return s; }),
         resetUI: () => update(s => { s.ui = getNewState().ui; saveState(); return s; }),

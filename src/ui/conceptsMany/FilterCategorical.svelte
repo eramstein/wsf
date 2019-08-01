@@ -29,7 +29,7 @@
     });    
     
     $: {
-        if (filters.limited) {
+        if (filters && filters.limited) {
             categoriesForChart = categoriesForChart.slice(0, CATEGORIES_LIMITED_DISPLAYED);
         }
         categoriesForChart.sort((a, b) => a.label.localeCompare(b.label));
@@ -84,7 +84,7 @@
                 ">
                 <div class="category-value"
                     style="width: {category.sizePercent}%;
-                           background-color: {filters.categories[category.label] ? 'red' : 'steelblue'}">
+                           background-color: {filters && filters.categories[category.label] ? 'red' : 'steelblue'}">
                     <div class="category-label"
                         style="color: {category.sizePercent > 10 ? 'white' : '#333' };
                                right: {category.sizePercent > 10 ? '5px' : null };
