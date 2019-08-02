@@ -30,6 +30,19 @@
         Object.values($State.data.concepts).filter(c => c.name !== $State.ui.screenParameters.concept)    
     : [];
 
+    let nextItem;
+    let prevItem;
+
+    $: {        
+        if ($State.ui.openScreen === Screen.Instance) {
+            const concept = $State.data.concepts[$State.ui.lastOpenConcept];
+            const identifier = Object.entries(concept.attributes).filter(a => a[1].type === DataType.Identifier).map(a => a[0])[0];
+            const index = $State.ui.filteredItems.map(i => i[identifier]).indexOf($State.ui.screenParameters.instance);
+            nextItem = index >= $State.ui.filteredItems.length ? 0 : $State.ui.filteredItems[index + 1] && $State.ui.filteredItems[index + 1][identifier];
+            prevItem = index === 0 ? $State.ui.filteredItems[$State.ui.filteredItems.length - 1] : $State.ui.filteredItems[index - 1] && $State.ui.filteredItems[index - 1][identifier];
+        }          
+    }
+
 </script>
 
 <style>
@@ -40,15 +53,26 @@
     .home-bar {
         height: 100%;
     }
+    .home-icon {
+        padding-right: 5px;
+    }
     .breadcrumb {
         height: 33%;
         border-bottom: 1px solid #5c5c5c;
     }
-    .breadcrumb-delimiter, .breadcrumb-option {
+    .breadcrumb-delimiter, .breadcrumb-option, .breadcrumb-leaf {
         font-size: 12px;
-        color: #eee;
-        padding: 0px 5px;
+        color: #eee;        
+    }
+    .breadcrumb-option {
         cursor: pointer;
+        padding: 0px 5px;
+    }
+    .breadcrumb-option-toneddown {
+        color: #999;
+    }
+    .breadcrumb-option-highlighted {
+        color: #fff;
     }
     .home-bar, .breadcrumb {
         display: flex;
@@ -73,10 +97,6 @@
         height: 66%;
         border-bottom: 1px solid #5c5c5c;
     }
-    .menu div {
-        height: 100%;
-        border-right: 1px solid #5c5c5c;
-    }
     .tab {
         height: 100%;
         display: flex;
@@ -86,6 +106,7 @@
         cursor: pointer;
         min-width: 100px;
         justify-content: center;
+        border-right: 1px solid #5c5c5c;
     }
     .selected, .selected:hover {
         background-color: rgb(92, 36, 36);
@@ -93,26 +114,13 @@
     .tab:hover {
         background-color: rgb(92, 36, 36);
     }
-    .top-left {
+    .article-title {
+        height: 100%;
         display: flex;
-    }
-    .page-name {
-        text-align: center;
-        flex-grow: 1;
-    }
-    .instance-browser {
-        display: flex;
-        justify-content: space-between;
-        padding-right: 20px;
         align-items: center;
+        padding: 0px 30px;
+        color: #eee;
     }
-    .instance-arrow {
-        font-weight: bold;
-        padding-right: 8px;
-        cursor: pointer;
-        font-family: monospace;
-        font-size: 21px;
-    }    
 </style>
 
 <div class="top-bar-container">
@@ -140,8 +148,8 @@
     {:else}
         <div class="breadcrumb">
             <Link screen={ Screen.Home } params={{}}>
-                <div style="cursor:pointer">
-                    <img style="width:15px;height:15px;filter: invert(90%);" src={homeIconSrc} />
+                <div style="cursor:pointer" class="home-icon">
+                    <img style="width:15px;height:15px;filter: invert(90%);" alt="h" src={homeIconSrc} />
                 </div>
             </Link>
             {#if $State.ui.openScreen === Screen.Concept}
@@ -150,34 +158,61 @@
                 </div>
                 {#each Object.values($State.data.concepts) as concept (concept.name) }
                     <Link screen={ Screen.Concept } params={{ concept: concept.name, widget: ConceptScreen.Lists }}>
-                        <div class="breadcrumb-option" style="font-weight:{concept.name === $State.ui.screenParameters.concept ? 'bold' : ''}">
+                        <div class="breadcrumb-option"
+                            class:breadcrumb-option-highlighted="{concept.name === $State.ui.screenParameters.concept}"
+                            class:breadcrumb-option-toneddown="{concept.name !== $State.ui.screenParameters.concept}">
                             { capitalize(concept.name) }
                         </div>
                     </Link>
                 {/each}
-            {/if}            
-        </div>
-        <div class="top-left" style="width: {filtersWidth-20}px">
-            <div class="page-name">
-                {#if $State.ui.openScreen === Screen.Article}
-                    <Link screen={ Screen.Articles } params={ null }>
-                        { $State.ui.screenParameters.articleID ?
-                        $State.data.articles[$State.ui.screenParameters.articleID].title
-                        :
-                        'Articles List'
-                        }
+            {/if}
+            {#if $State.ui.openScreen === Screen.Instance}
+                <Link screen={ Screen.Concept } params={{ concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists }}>
+                    <div class="breadcrumb-delimiter">
+                        > { capitalize($State.ui.screenParameters.concept) } >
+                    </div>
+                </Link>
+                {#if prevItem }
+                <div class="breadcrumb-option breadcrumb-option-toneddown" on:click={ () => goToInstance(-1) }>
+                    { prevItem }
+                </div>
+                {/if}
+                <div class="breadcrumb-option breadcrumb-option-highlighted">
+                    <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
+                        <div>{ capitalize($State.ui.screenParameters.instance) }</div>
+                    </Link>
+                </div>
+                {#if nextItem }
+                <div class="breadcrumb-option breadcrumb-option-toneddown" on:click={ () => goToInstance(1) }>
+                    { nextItem }
+                </div>
+                {/if}                               
+            {/if}
+            {#if $State.ui.openScreen === Screen.Article}
+                {#if $State.ui.screenParameters.instance}
+                    <Link screen={ Screen.Concept } params={{ concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists }}>
+                        <div class="breadcrumb-option">
+                            > { capitalize($State.ui.screenParameters.concept) }
+                        </div>
+                    </Link>
+                    <Link screen={ Screen.Instance } params={{ concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Mashups }}>
+                        <div class="breadcrumb-option">
+                            > { capitalize($State.ui.screenParameters.instance) }
+                        </div>
+                    </Link>
+                    <Link screen={ Screen.Instance } params={{ concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance, widget: InstanceScreen.Articles }}>
+                        <div class="breadcrumb-option">
+                            > Articles
+                        </div>
+                    </Link>                    
+                {:else}
+                    <Link screen={ Screen.Articles }>
+                        <div class="breadcrumb-option">
+                            > Articles
+                        </div>
                     </Link>
                 {/if}
-                {#if $State.ui.openScreen === Screen.Instance}
-                    <div class="instance-browser">
-                        <div class="instance-arrow" on:click={ () => goToInstance(-1) }>&lt;</div>
-                        <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
-                            <div>{ capitalize($State.ui.screenParameters.instance) }</div>
-                        </Link>
-                        <div class="instance-arrow" on:click={ () => goToInstance(1) }>&gt;</div>
-                    </div>                                
-                {/if}
-            </div>
+            {/if}
         </div>
         <div class="menu">            
 
@@ -215,6 +250,12 @@
                         Articles                
                     </div>
                 </Link>
+            {/if}
+
+            {#if $State.ui.openScreen === Screen.Article}
+                <div class="article-title">
+                    { $State.data.articles[$State.ui.screenParameters.articleID].title }
+                </div>
             {/if}
 
         </div>

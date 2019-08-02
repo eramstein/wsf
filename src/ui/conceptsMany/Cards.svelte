@@ -2,7 +2,7 @@
     import { afterUpdate } from 'svelte';
     import { State } from '../../stores';
     import { DataType, Cardinality } from "../../model";
-    import { GRID_COLUMNS } from "../../constants";
+    import { GRID_COLUMNS, BUTTON_EDIT } from "../../constants";
     import Widget from "../Widget.svelte";
 
     const MAX_CARDS = 20;
@@ -12,7 +12,6 @@
     let widgets = Object.values(concept.widgets.one);
     let lastOpenWidget = $State.ui.lastOpenWidget && widgets.filter(w => w.name === $State.ui.lastOpenWidget)[0];    
     let widget = widgets.length > 0 && (lastOpenWidget || widgets[0]);
-    let showConfig = false;      
 
     function addWidget() {
         State.openWidgetAuthoring({
@@ -37,9 +36,13 @@
         });
     }
 
-    function selectWidget(name) {             
-        selectedWidget = name;
-        widget = concept.widgets.one[name];               
+    function selectWidget(name) {     
+        if (selectedWidget === name) {
+            editWidget();
+        } else {
+            selectedWidget = name;
+            widget = concept.widgets.one[name];
+        } 
     }
 
     let selectedWidget = widget.name;
@@ -71,7 +74,7 @@
         display: grid;        
         grid-gap: 10px;        
         height: 100%;
-        background-color: #eee;
+        background-color: #fbfbfb;
         padding: 10px;
         box-sizing: border-box;
     }
@@ -83,8 +86,8 @@
         overflow: hidden;
     }
     .widgets-bar {
-        background-color: rgb(92, 92, 92);
-        height: 40px;
+        background-color: #eee;
+        height: 36px;
         display: flex;
         justify-content: space-between;
     }
@@ -99,35 +102,31 @@
         display: flex;
         align-items: center;
         padding: 0px 20px;
-        color: white;
         cursor: pointer;
         min-width: 100px;
         justify-content: center;
     }
+    .widget-tab {
+        position: relative;
+    }
+    .edit-button {
+        position: absolute;
+        right: 5px;    
+    }
     .selected, .selected:hover {
-        background-color: steelblue !important;
+        background-color: #ddd;
+    }
+    .selected:not(:hover) .edit-button {
+        display: none;
     }
     .widget-tab:hover {
-        background-color: rgba(65, 118, 163, 0.52)
-    }
-    .config-buttons {
-        height: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-    }
-    .config-buttons div {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        padding: 0px 20px;
-        color: white;
-        cursor: pointer;
+        background-color: #ccc;
     }
     .add-widget {
         font-size: 24px;
         font-weight: bold;
         min-width: 30px !important;
+        align-items: baseline  !important;
     }
 </style>
 
@@ -137,16 +136,15 @@
         <div class="widget-tabs">
             {#each widgets as widget (widget.name) }
                 <div class="widget-tab" class:selected="{ selectedWidget === widget.name }"
-                    on:click={ () => selectWidget(widget.name) }>{ widget.name }</div>
+                    on:click={ () => selectWidget(widget.name) }>
+                    { widget.name }
+                    <img class="edit-button"
+                        alt="e"
+                        src={BUTTON_EDIT}
+                        style="height:16px;width:16px;display:{selectedWidget !== widget.name ? 'none' : null}" />
+                </div>
             {/each}
             <div class="add-widget" on:click={ () => addWidget() }>+</div>
-        </div>
-        <div class="config-buttons">
-            {#if showConfig === false }
-            <div class="open-config-button"  on:click={ () => editWidget() }>
-                Config
-            </div>
-            {/if}
         </div>
     </div>
 

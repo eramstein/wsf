@@ -29,7 +29,7 @@
         });
         State.goTo(
             Screen.Article,
-            { articleID: newArticleID }
+            { articleID: newArticleID, concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance  }
         );
     }
 

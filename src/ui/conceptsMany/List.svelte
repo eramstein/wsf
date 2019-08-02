@@ -1,8 +1,9 @@
 <script>
     import { Screen, InstanceScreen, DataType } from '../../model';
     import { State } from '../../stores';
+    import { BUTTON_EDIT, BUTTON_DELETE } from '../../constants';
     import Link from '../Link.svelte';
-    import Widget from "../Widget.svelte";
+    import Widget from "../Widget.svelte";    
     import { sortBy, getColumnsFromAttributes, getColumnSorting, getDefaultConfig, getList, getSortArrowClass, saveListConfig, getNewList } from './List';
 
     let configsPerConcept = {};
@@ -41,13 +42,11 @@
     }
 
     function saveConfig() {
-        const id = config.id;
         const newLists = saveListConfig(lists, config);
         let newPreferences = preferences || {};
         newPreferences.lists = newLists;
         State.updateConceptPreferences(concept.name, newPreferences);
         showConfig = false;
-        selectList(id);
     }
 
     function addList() {
@@ -59,9 +58,17 @@
         State.updateConceptPreferences(concept.name, newPreferences);
     }
 
-    function selectList(id) {        
-        selectedList = id;
-        config = lists.filter(l => l.id === id)[0];
+    function selectList(id) {
+        if (selectedList === id) {
+            if (showConfig === true) {
+                saveConfig();
+            }
+            showConfig = !showConfig;
+        } else {
+            selectedList = id;
+            config = lists.filter(l => l.id === id)[0];
+            showConfig = false;
+        }        
     }
 
     function deleteList() {
@@ -107,8 +114,8 @@
         margin-top: 5px;
     }
     .lists-bar {
-        background-color: rgb(92, 92, 92);
-        height: 40px;
+        background-color: #eee;
+        height: 36px;
         display: flex;
         justify-content: space-between;
     }
@@ -123,16 +130,25 @@
         display: flex;
         align-items: center;
         padding: 0px 20px;
-        color: white;
         cursor: pointer;
         min-width: 100px;
         justify-content: center;
     }
+    .list-tab {
+        position: relative;
+    }
+    .edit-button {
+        position: absolute;
+        right: 5px;    
+    }
     .selected, .selected:hover {
-        background-color: steelblue !important;
+        background-color: #ddd;
+    }
+    .selected:not(:hover) .edit-button {
+        display: none;
     }
     .list-tab:hover {
-        background-color: rgba(65, 118, 163, 0.52)
+        background-color: #ccc;
     }    
     .config-buttons {
         height: 100%;
@@ -140,18 +156,11 @@
         flex-wrap: wrap;
         align-items: center;
     }
-    .config-buttons div {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        padding: 0px 20px;
-        color: white;
-        cursor: pointer;
-    }
     .add-list {
         font-size: 24px;
         font-weight: bold;
         min-width: 30px !important;
+        align-items: baseline  !important;
     }
     .config {
         padding: 10px 20px;
@@ -167,7 +176,7 @@
     }
     .config-top-bar div button {
         cursor: pointer;
-        width: 100px;
+        width: 40px;
     }
     .save {
         background-color: #428e42;
@@ -221,16 +230,15 @@
             {:else}
                 {#each lists as list (list.id) }
                     <div class="list-tab" class:selected="{ selectedList === list.id }"
-                        on:click={ () => selectList(list.id) }>{ list.name }</div>
+                        on:click={ () => selectList(list.id) }>
+                        { list.name }
+                        <img class="edit-button"
+                            alt="e"
+                            src={BUTTON_EDIT}
+                            style="height:16px;width:16px;display:{selectedList !== list.id ? 'none' : null}" />
+                    </div>
                 {/each}
                 <div class="add-list" on:click={ () => addList() }>+</div>
-            {/if}
-        </div>
-        <div class="config-buttons">
-            {#if showConfig === false }
-            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
-                Config
-            </div>
             {/if}
         </div>
     </div>
@@ -238,15 +246,13 @@
     {#if showConfig === true }
         <div class="config">
             <div class="config-top-bar">
-                <div class="config-name">Name <input bind:value={ config.name }></div>
+                <div class="config-name">Name <input bind:value={ config.name }></div>                            
                 <div>
-                    <button on:click={ () => saveConfig() } class="save">Save</button>
-                </div>                
-                <div>
-                    <button on:click={ () => deleteList() } class="delete">Delete</button>
-                </div>
-                <div>
-                    <button on:click={ () => { showConfig = false; } }>Cancel</button>
+                    <button class="delete" on:click={ () => deleteList() }>
+                        <img alt="d"
+                            src={BUTTON_DELETE}
+                            style="height:18px;width:18px;filter: invert(100%);" />
+                    </button>
                 </div>
             </div>
             <div class="checkboxes-group-title">Raw Data</div>

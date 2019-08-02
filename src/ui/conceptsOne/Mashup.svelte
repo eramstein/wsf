@@ -1,22 +1,22 @@
 <script>
     import { afterUpdate } from 'svelte';
     import { Screen, InstanceScreen, DataType } from '../../model';
-    import { LEFT_BAR_WIDTH } from '../../constants';
+    import { LEFT_BAR_WIDTH, BUTTON_EDIT, BUTTON_DELETE } from '../../constants';
     import { State } from '../../stores';
     import Link from '../Link.svelte';
     import { getDefaultConfig, getNewMashup, addDefaultIfNeeded, getLayoutSimplified } from './Mashup';
     import Widget from "../Widget.svelte";
 
-    $: concept = $State.data.concepts[$State.ui.screenParameters.concept];
+    let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     $: instance = concept.items[$State.ui.screenParameters.instance];
     $: allWidgets = Object.keys(concept.widgets.one);    
     
     let showConfig = false;
 
-    $: defaultPrefs = $State.data.user.preferences.concepts[concept.name];
-    $: defaultMashups = defaultPrefs && defaultPrefs.mashups;
+    let defaultPrefs = $State.data.user.preferences.concepts[concept.name];
+    let defaultMashups = defaultPrefs && defaultPrefs.mashups;
 
-    $: config = getDefaultConfig(concept.widgets.one, defaultMashups);
+    let config = getDefaultConfig(concept.widgets.one, defaultMashups);
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
     $: mashups = preferences && preferences.mashups && preferences.mashups.length > 0 ? preferences.mashups : [config];
@@ -49,9 +49,18 @@
         State.updateConceptPreferences(concept.name, newPreferences);
     }
 
-    function selectMashup(id) {        
-        selectedMashup = id;
-        config = mashups.filter(l => l.id === id)[0];
+    function selectMashup(id) {
+        if (selectedMashup === id) {
+            if (showConfig === true) {
+                saveConfig();
+            } else {
+                showConfig = true;
+            }
+        } else {
+            selectedMashup = id;
+            config = mashups.filter(l => l.id === id)[0];
+            showConfig = false;
+        }    
     }
 
     function deleteMashup() {
@@ -76,8 +85,8 @@
 
 <style>
     .mashups-bar {
-        background-color: rgb(92, 92, 92);
-        height: 40px;
+        background-color: #eee;
+        height: 36px;
         display: flex;
         justify-content: space-between;
     }
@@ -92,30 +101,25 @@
         display: flex;
         align-items: center;
         padding: 0px 20px;
-        color: white;
         cursor: pointer;
         min-width: 100px;
         justify-content: center;
     }
     .selected, .selected:hover {
-        background-color: steelblue !important;
+        background-color: #ddd;
+    }
+    .selected:not(:hover) .edit-button {
+        display: none;
     }
     .mashup-tab:hover {
-        background-color: rgba(65, 118, 163, 0.52)
+        background-color: #ccc;
     }    
-    .config-buttons {
-        height: 100%;
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
+    .mashup-tab {
+        position: relative;
     }
-    .config-buttons div {
-        height: 100%;
-        display: flex;
-        align-items: center;
-        padding: 0px 20px;
-        color: white;
-        cursor: pointer;
+    .edit-button {
+        position: absolute;
+        right: 5px;    
     }
     .add-mashup {
         font-size: 24px;
@@ -123,7 +127,7 @@
         min-width: 30px !important;
     }
     .widgets-list {
-        padding: 10px 20px;
+        padding: 0px 20px;
         height: 100%;
         border-right: 1px solid #ccc;
         flex: 1 1 auto;
@@ -132,17 +136,11 @@
         display: flex;
         flex: 1 1 auto;
     }
-    .config-top-bar{
-        display: flex;
-    } 
-    .config-top-bar div{
-        padding-right: 10px;
-    }
-    .config-top-bar div button{
-       width: 85px;
-    }
     .config-name input{
-       width: 276px;
+       width: 241px;
+    }
+    .config-name{
+       margin-right: 10px;
     }
     .left-panel{
         display: flex;
@@ -180,7 +178,7 @@
         grid-template-columns: auto auto auto;
         grid-template-rows: auto auto;
         grid-gap: 0px;
-        background-color: #eee;
+        background-color: #fbfbfb;
         padding: 0px;
         width: 100%;
     }
@@ -189,6 +187,11 @@
         border-bottom: 1px solid #ccc;
         background-color: white;
         padding: 12px  20px;
+    }
+    .delete {
+        background-color: #c50404;
+        color: white;
+        height: 36px;
     }
 </style>
 
@@ -201,16 +204,15 @@
             {:else}
                 {#each mashups as mashup (mashup.id) }
                     <div class="mashup-tab" class:selected="{ selectedMashup === mashup.id }"
-                        on:click={ () => selectMashup(mashup.id) }>{ mashup.name }</div>
+                        on:click={ () => selectMashup(mashup.id) }>
+                        { mashup.name }
+                        <img class="edit-button"
+                            alt="e"
+                            src={BUTTON_EDIT}
+                            style="height:16px;width:16px;display:{selectedMashup !== mashup.id ? 'none' : null}" />
+                    </div>
                 {/each}
                 <div class="add-mashup" on:click={ () => addMashup() }>+</div>
-            {/if}
-        </div>
-        <div class="config-buttons">
-            {#if showConfig === false }
-            <div class="open-config-button" on:click={ () => { showConfig = true; } }>
-                Config
-            </div>            
             {/if}
         </div>
     </div>  
@@ -219,19 +221,17 @@
         {#if showConfig === true }
             <div class="left-panel" style="width: {LEFT_BAR_WIDTH}px; max-width: {LEFT_BAR_WIDTH}px">
                 <div class="widgets-list">
-                    <div class="config-top-bar">                       
-                        <div>
-                            <button on:click={ () => saveConfig() } class="save">Save</button>
-                        </div>                
-                        <div>
-                            <button on:click={ () => deleteMashup() } class="delete">Delete</button>
-                        </div>
-                        <div>
-                            <button on:click={ () => { showConfig = false; } }>Cancel</button>
-                        </div>
-                    </div>
                     <div class="section-title">Mashup Name</div>
-                    <div class="config-name"><input bind:value={ config.name }></div>
+                    <div style="display:flex">
+                        <div class="config-name"><input bind:value={ config.name }></div>
+                        <div>
+                            <button on:click={ () => deleteMashup() } class="delete">
+                                <img alt="d"
+                                    src={BUTTON_DELETE}
+                                    style="height:18px;width:18px;filter: invert(100%);" />
+                            </button>
+                        </div>
+                    </div>                    
                     <div class="section-title">Widgets</div>
                     <div class="widget-selectors">
                         {#each allWidgets as widget (widget) }                           
