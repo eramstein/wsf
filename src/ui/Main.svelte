@@ -25,11 +25,14 @@
         color: #333;
     }
     .top {
-        height: 60px;
+        height: 50px;
         flex: 0 1 auto;
     }
-    .contents {
+    .outer-contents {
+        flex: 1 1 auto;
         margin-top: 1px;
+    }
+    .contents {
         flex: 1 1 auto;
     }
     .concept {
@@ -40,9 +43,6 @@
         flex: 1 0 auto;
         border-right: 1px solid #ccc;
     }
-    .contents {
-        flex: 1 1 auto;
-    }    
 </style>
 
 <div class="screen">
@@ -51,7 +51,7 @@
         <MainBar />
     </div>
 
-    <div class="contents">
+    <div class="outer-contents">
 
         {#if $State.ui.openScreen === Screen.Home || $State.ui.openScreen === Screen.Concepts}
             <Concepts concepts={$State.data.concepts} />

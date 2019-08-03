@@ -49,7 +49,9 @@
 
 <div class="filters">
     <div class="filters-title">
-        <span class="concept-count">{filteredItems.length.toLocaleString('fr', {useGrouping:true})}</span>
+        <span class="concept-count">
+            {filteredItems.length.toLocaleString('fr', {useGrouping:true})} {concept.name}
+        </span>
     </div>
     {#each chartsData as data (data.attribute) }
         <div class="filter">

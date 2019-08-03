@@ -48,7 +48,8 @@
 <style>
     .top-bar-container {
         height:100%;
-        background-color: rgb(66, 21, 21);
+        background-color: rgb(49, 15, 15);
+        border-bottom: 1px solid #222;
     }
     .home-bar {
         height: 100%;
@@ -56,20 +57,27 @@
     .home-icon {
         padding-right: 5px;
     }
-    .breadcrumb {
-        height: 33%;
-        border-bottom: 1px solid #5c5c5c;
+    .menu {
+        display: flex;
+        height: 23px;
     }
-    .breadcrumb-delimiter, .breadcrumb-option, .breadcrumb-leaf {
+    .breadcrumb {
+        height: 20px;        
+    }    
+    .breadcrumb-delimiter, .breadcrumb-option {
         font-size: 12px;
         color: #eee;        
     }
+    .breadcrumb-delimiter {
+        padding-right: 5px;       
+    }
     .breadcrumb-option {
         cursor: pointer;
-        padding: 0px 5px;
+        padding-right: 5px;
     }
     .breadcrumb-option-toneddown {
         color: #999;
+        padding-left: 3px;
     }
     .breadcrumb-option-highlighted {
         color: #fff;
@@ -77,48 +85,44 @@
     .home-bar, .breadcrumb {
         display: flex;
         align-items: center;
-        padding-left: 28px;
+        padding-left: 16px;
     }
     .home-bar .tab {
         font-size: 20px !important;
     }
     .home-bar .menu {
         height: 100% !important;
-        border-bottom: none  !important;
     }
     .app-name {
         font-size: 24px;
         font-family: cursive;
         padding: 0px 40px 0px 20px;
         color: #eee;
-    }
-    .menu {
-        display: flex;
-        height: 66%;
-        border-bottom: 1px solid #5c5c5c;
-    }
+    }    
     .tab {
-        height: 100%;
+        height: 15px;
+        margin-top: 5px;
+        border-right: 1px solid #999;
         display: flex;
         align-items: center;
-        padding: 0px 20px;
-        color: #eee;
+        padding: 0px 16px;
+        color: #999;
         cursor: pointer;
-        min-width: 100px;
         justify-content: center;
-        border-right: 1px solid #5c5c5c;
     }
-    .selected, .selected:hover {
-        background-color: rgb(92, 36, 36);
+    .home-bar .tab {
+        height: 100%;
+        margin-top: 0px;
+        border-right: none;
     }
-    .tab:hover {
-        background-color: rgb(92, 36, 36);
+    .selected {
+        color: #eee;
     }
     .article-title {
         height: 100%;
         display: flex;
         align-items: center;
-        padding: 0px 30px;
+        padding: 0px 16px;
         color: #eee;
     }
 </style>
@@ -147,9 +151,9 @@
         </div>
     {:else}
         <div class="breadcrumb">
-            <Link screen={ Screen.Home } params={{}}>
+            <Link screen={ Screen.Concepts } params={{}}>
                 <div style="cursor:pointer" class="home-icon">
-                    <img style="width:15px;height:15px;filter: invert(90%);" alt="h" src={homeIconSrc} />
+                    <img style="width:15px;height:15px;margin-top: 4px;filter: invert(90%);" alt="h" src={homeIconSrc} />
                 </div>
             </Link>
             {#if $State.ui.openScreen === Screen.Concept}
@@ -168,23 +172,20 @@
             {/if}
             {#if $State.ui.openScreen === Screen.Instance}
                 <Link screen={ Screen.Concept } params={{ concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists }}>
-                    <div class="breadcrumb-delimiter">
+                    <div class="breadcrumb-option">
                         > { capitalize($State.ui.screenParameters.concept) } >
                     </div>
                 </Link>
-                {#if prevItem }
-                <div class="breadcrumb-option breadcrumb-option-toneddown" on:click={ () => goToInstance(-1) }>
-                    { prevItem }
-                </div>
-                {/if}
                 <div class="breadcrumb-option breadcrumb-option-highlighted">
                     <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Lists } }>
                         <div>{ capitalize($State.ui.screenParameters.instance) }</div>
                     </Link>
                 </div>
                 {#if nextItem }
-                <div class="breadcrumb-option breadcrumb-option-toneddown" on:click={ () => goToInstance(1) }>
-                    { nextItem }
+                <div class="breadcrumb-option breadcrumb-option-toneddown"
+                    style="padding-right:100px"
+                    on:click={ () => goToInstance(1) }>
+                    { nextItem } ...
                 </div>
                 {/if}                               
             {/if}

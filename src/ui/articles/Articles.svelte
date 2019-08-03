@@ -50,7 +50,7 @@
     <button on:click={ () => newArticle() }>New Article</button>
 
     {#each articles as article (article.id) }        
-        <Link screen={ Screen.Article } params={{ articleID: article.id }}>
+        <Link screen={ Screen.Article } params={{ articleID: article.id, concept: $State.ui.screenParameters.concept, instance: $State.ui.screenParameters.instance }}>
             <div class="article">
                 <a>
                     { article.title }
