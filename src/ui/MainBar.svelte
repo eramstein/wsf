@@ -255,7 +255,8 @@
 
             {#if $State.ui.openScreen === Screen.Article}
                 <div class="article-title">
-                    { $State.data.articles[$State.ui.screenParameters.articleID].title }
+                    { $State.data.articles[$State.ui.screenParameters.articleID] &&
+                      $State.data.articles[$State.ui.screenParameters.articleID].title }
                 </div>
             {/if}
 

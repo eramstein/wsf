@@ -5,6 +5,7 @@
     $: article = $State.data.articles[$State.ui.screenParameters.articleID];
     
     let titleValue;
+    let summaryValue;
     let editMode = true;
     let shadowRoot;
     let stylesAdded = false;
@@ -54,7 +55,8 @@
 
     afterUpdate(() => {
         if (!titleInserted) {
-            titleValue = article.title;
+            titleValue = article.title || '';
+            summaryValue = article.summary || '';
             titleInserted = true;
         }
         if (editMode && !contentInserted) {
@@ -82,9 +84,17 @@
             id: article.id,
             aboutItems: article.aboutItems,
             title: titleValue,
+            summary: summaryValue,
             content: document.getElementById('editor').innerText,
         });
         editMode = false;
+    }
+
+    function deleteArticle() {        
+        const r = confirm("Delete article?");
+        if (r === true) {
+            State.deleteArticle(article.id);
+        }   
     }
     
     function selectWidget(widget) {      
@@ -169,6 +179,18 @@
     .widget-result:hover {
         background-color: #eee;
     }
+    .buttons {
+        display: flex;
+    }
+    .buttons div button {
+        width: 61px;
+        margin-left: 10px;
+    }
+    .block-title {
+        padding-bottom: 3px;
+        font-size: 12px;
+        color: #999;
+    }
 </style>
 
 <div class="article">
@@ -177,16 +199,15 @@
         <div class="top-bar">
             <div class="top-bar-left">
                 <div class="title">
-                    Title
-                    <input bind:value={ titleValue } style="width: 400px">
+                    <input bind:value={ titleValue } style="width: 400px" placeholder="Enter title">
                 </div>
                 <div class="widgets">
-                    Widgets
                     <input class="widgets-input"
+                        placeholder="Search to insert widgets"
                         bind:value={ searchString }
                         style="width: 400px">
                     {#if widgetsFound.length > 0}
-                    <div class="results" style="width: 400px;left: 60px">
+                    <div class="results" style="width: 400px;left: 0px">
                         {#each widgetsFound as widget (widget.name) }
                             <div class="widget-result" on:click={ () => selectWidget(widget) }>
                                 { widget.name }
@@ -206,11 +227,23 @@
                     {/if}
                 </div>
             </div>
-            <div class="save">            
-                <button on:click={ save }>Save</button>
-            </div>
+            <div class="buttons">
+                <div class="save">            
+                    <button on:click={ save }>Save</button>
+                </div>
+                <div class="delete">            
+                    <button on:click={ deleteArticle }>Delete</button>
+                </div>
+            </div>            
         </div>
 
+        <div class="summary">
+            <div class="block-title">Summary</div>
+            <textarea bind:value={ summaryValue }
+                style="width: calc(100% + 10px); padding-left:10px;height: 78px;resize: none;"></textarea>
+        </div>
+
+        <div class="block-title">Contents</div>
         <div id="editor" contenteditable>
         </div>
     {/if}

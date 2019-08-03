@@ -23,8 +23,6 @@ interface Column {
 }
 
 export function getDefaultConfig(widgets : { [key: string] : Widget }, mashups : MashupConfig[]) : MashupConfig {
-    console.log('getDefaultConfig');
-    
     const allWidgets = Object.values(widgets).map(w => w.name);
     if (!mashups || mashups.length === 0) {
         return {

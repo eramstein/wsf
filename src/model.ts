@@ -64,6 +64,7 @@ export interface Article {
     title: string;
     aboutItems: { concept: string; item: string; }[];
     content: string;
+    summary?: string;
 }
 
 export interface NavigationStep {
