@@ -29,8 +29,10 @@
     });
 
     $: {
-        if (!searchString || searchString.length === 0) {
+        if (searchString === null) {
             widgetsFound = [];
+        } else if (searchString.length === 0) {
+            widgetsFound = widgets;
         } else {
             widgetsFound = widgets.filter(w => w.name.toLowerCase().indexOf(searchString) >= 0);
         }        
@@ -64,6 +66,15 @@
             contentInserted = true;
         } else {
             let filledTemplate = article.content.replace(/\n/g, '<br />');
+            if (article.aboutItems.length === 1) {
+                const data = $State.data
+                    .concepts[article.aboutItems[0].concept]
+                    .items[article.aboutItems[0].item];
+                function replacer(match, p1) {
+                    return data[p1];                
+                }        
+                filledTemplate = filledTemplate.replace(/{{(.+?)}}/g, replacer);
+            }            
             if (!stylesAdded) {
                 filledTemplate += `
                     <style>
@@ -107,6 +118,9 @@
             widget.props.forEach(p => {
                 propsValues[p] = null;
             });
+            setTimeout(() => {                
+                document.getElementsByClassName('input-prop')[0].focus();
+            }, 10);
         }
     }
 
@@ -127,6 +141,24 @@
         searchString = null;
         contentInserted = false;
         editMode = true;
+    }
+
+    function resetSearch() {
+        searchString = '';
+    }
+
+    function stopSearch(e) {          
+        if (e.target.className.indexOf('top-bar') >= 0
+           || e.target.className.indexOf('title') >= 0) {
+            searchString = null;
+            selectedWidget = null;
+        }
+    }
+
+    function onPropType(e) {
+        if (e.key === 'Enter') {
+            insertWidget();           
+        }
     }
 
 </script>
@@ -168,6 +200,8 @@
         border: 1px solid #ccc;
         padding: 5px 20px;
         left: 2px;
+        width: 358px;
+        left: 0px;
     }
     .prop {
         padding: 5px 0px;
@@ -196,18 +230,20 @@
 <div class="article">
 
     {#if editMode}
-        <div class="top-bar">
+        <div class="top-bar" on:click={ e => stopSearch(e) }>
             <div class="top-bar-left">
                 <div class="title">
                     <input bind:value={ titleValue } style="width: 400px" placeholder="Enter title">
                 </div>
                 <div class="widgets">
                     <input class="widgets-input"
+                        id="widget-search"
                         placeholder="Search to insert widgets"
                         bind:value={ searchString }
+                        on:click={ resetSearch }
                         style="width: 400px">
                     {#if widgetsFound.length > 0}
-                    <div class="results" style="width: 400px;left: 0px">
+                    <div class="results">
                         {#each widgetsFound as widget (widget.name) }
                             <div class="widget-result" on:click={ () => selectWidget(widget) }>
                                 { widget.name }
@@ -216,13 +252,12 @@
                     </div>
                     {/if}
                     {#if selectedWidget && selectedWidget.props && selectedWidget.props.length > 0}
-                    <div class="results" style="width: 400px;left: 60px">
+                    <div id="selected-widget" class="results">
                         {#each selectedWidget.props as prop }
                             <div class="prop">
-                                { prop } <input bind:value={ propsValues[prop] }>
+                                { prop } <input class="input-prop" on:keypress={e => onPropType(e)} bind:value={ propsValues[prop] }>
                             </div>        
                         {/each}
-                        <button on:click={ () => { insertWidget() }}>Insert</button>
                     </div>
                     {/if}
                 </div>

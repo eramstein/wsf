@@ -62,8 +62,10 @@
         if (selectedList === id) {
             if (showConfig === true) {
                 saveConfig();
+                showConfig = false;
+            } else {
+                showConfig = true;
             }
-            showConfig = !showConfig;
         } else {
             selectedList = id;
             config = lists.filter(l => l.id === id)[0];

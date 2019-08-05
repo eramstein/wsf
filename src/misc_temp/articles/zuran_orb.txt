@@ -1,0 +1,1 @@
+This one was banned quickly. Its name is {{Name}}! <wsf-mana-cost data-manacost="{{Mana Cost}}"></wsf-mana-cost>
