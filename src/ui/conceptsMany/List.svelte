@@ -224,7 +224,6 @@
 </style>
 
 <div>
-
     <div class="lists-bar">
         <div class="list-tabs">
             {#if !lists }                
@@ -301,7 +300,16 @@
         </thead>
         <tbody>            
             {#each items as item (item[idAttribute]) }
-                <tr on:click={ () => State.goTo(Screen.Instance, { concept: $State.ui.screenParameters.concept, instance: item[idAttribute], widget: InstanceScreen.Mashups }) }>
+                <tr on:click={ () => {
+                        if (showConfig === false) {
+                            State.goTo(Screen.Instance, {
+                                concept: $State.ui.screenParameters.concept,
+                                instance: item[idAttribute],
+                                widget: InstanceScreen.Mashups,
+                            });
+                        }                        
+                    }
+                }>
                     {#each displayedWidgets as widget (widget.name) }
                         <td>
                             <Widget
@@ -311,7 +319,16 @@
                     {/each}
                     {#each displayedColumns as attribute (attribute.name) }
                         <td>
-                            { item[attribute.name] }
+                            {#if showConfig === true }
+                            <wsf-data
+                                data-concept="{concept.name}"
+                                data-instance="{item[idAttribute]}"
+                                data-attribute="{attribute.name}"
+                                data-defval="{item[attribute.name]}">
+                            </wsf-data>
+                            {:else}
+                                {item[attribute.name]}
+                            {/if}
                         </td>
                     {/each}
                 </tr>

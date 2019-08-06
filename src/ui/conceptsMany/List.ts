@@ -1,7 +1,7 @@
 import { DataType, ConceptPreferences, ListConfig, Column, Widget } from "../../model";
 import { getNewID } from "../../utils";
 
-const PAGE_SIZE = 60;
+const PAGE_SIZE = 30;
 
 export enum Sorting {
     Asc = "asc",

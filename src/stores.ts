@@ -2,7 +2,7 @@ import { get, writable } from "svelte/store";
 import { handleKeyPress } from "./keybinds";
 import { FullState, Screen, WidgetAuthoring } from "./model";
 import { mutateStateAfterNavigation, goBack } from "./logic/navigation";
-import { defineCustomElements } from "./logic/customElements.js";
+import { defineCustomElements, defineDataElement } from "./logic/customElements.js";
 
 export const State = createFullState();
 
@@ -22,6 +22,7 @@ function createFullState() {
         goBack: () => update(s => { goBack(s); saveState(); return s; }),
         resetUI: () => update(s => { s.ui = getNewState().ui; saveState(); return s; }),
         
+        setData: (concept, instance, attribute, value) => update(s => { s.data.concepts[concept].items[instance][attribute] = value; saveState(); return s; }),
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; s.data.user.preferences.concepts[concept.name] = {lists: [], mashups: [], filters: {}}; saveState(); return s; }),
         saveConcept: concept => update(s => { s.data.concepts[concept.name] = concept; saveState(); return s; }),
         filterData: newItems => update(s => { s.ui.filteredItems = newItems; saveState(); return s; }),
@@ -109,6 +110,7 @@ function loadState() {
         if (request.result) {            
             State.load(request.result.state);
             defineCustomElements(request.result.state.data.concepts);
+            defineDataElement(get, State);
         } else {
           console.log('No data record');
         }

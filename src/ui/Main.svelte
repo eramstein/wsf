@@ -13,7 +13,7 @@
     import Mashup from './conceptsOne/Mashup.svelte';
     import Relations from './conceptsOne/Relations.svelte';
     import WidgetAuthoring from './widgetAuthoring/WidgetAuthoring.svelte';
-    import { LEFT_BAR_WIDTH } from '../constants';   
+    import { LEFT_BAR_WIDTH } from '../constants';    
 
 </script>
 

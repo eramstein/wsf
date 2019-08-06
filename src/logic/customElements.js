@@ -41,3 +41,30 @@ export function defineCustomElements(d) {
         });
     });
 }
+
+export function defineDataElement(get, State) {
+    customElements.define('wsf-data', class extends HTMLElement {
+        constructor() {
+            super();
+                              
+            const shadowRoot = this.attachShadow({mode: 'open'});     
+            
+            // timeout to let Svelte set the data attributes
+            setTimeout(() => {
+                const { concept, instance, attribute, defval } = this.dataset;                
+                const value = defval || get(State).data.concepts[concept].items[instance][attribute];
+
+                const inputNode = document.createElement('div');
+                inputNode.contentEditable = true;
+                inputNode.innerText = value;
+                inputNode.onblur = e => {
+                    // TODO - this is a fragile way to get the input's value
+                    const inputValue = e.path[0].innerText;
+                    State.setData(concept, instance, attribute, inputValue);
+                }
+                shadowRoot.appendChild(inputNode);
+            }, 2);            
+            
+        }
+    });
+}
