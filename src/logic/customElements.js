@@ -52,7 +52,7 @@ export function defineDataElement(get, State) {
             // timeout to let Svelte set the data attributes
             setTimeout(() => {
                 const { concept, instance, attribute, defval } = this.dataset;                
-                const value = defval || get(State).data.concepts[concept].items[instance][attribute];
+                const value = defval || get(State).data.concepts[concept].items[instance][attribute] || '';
 
                 const inputNode = document.createElement('div');
                 inputNode.contentEditable = true;

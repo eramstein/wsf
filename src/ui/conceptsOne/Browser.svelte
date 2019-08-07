@@ -43,11 +43,12 @@
         position: relative;
     }
     .title {
-        background-color: rgb(92, 92, 92);
+        background-color: steelblue;
         color: white;
-        padding: 10px 0px;
+        padding: 10px 20px;
         text-align: center;
         height: 18px;
+        justify-content: space-between;
     }
     .content {
         padding: 10px;
@@ -57,7 +58,7 @@
     }
     .nav {
         position: absolute;
-        top: 5px;
+        top: 7px;
         right: 10px;
         display: flex;
     }
@@ -76,21 +77,33 @@
         padding-right: 20px;
         min-width: 100px;
     }
-    .drilldown {
-        position: absolute;
-        top: 5px;
-        left: 20px;
-        font-weight: bold;
+    .breadcrumb {
+        display: flex;        
+    }
+    .delimiter {
+        padding: 0px 5px;
+    }
+    .item-name {
         cursor: pointer;
-        font-family: monospace;
-        font-size: 22px;
     }
 </style>
 
 <div class="browser">
 
     <div class="title">
-        { currentWidget.name || currentWidget }
+        <div class="breadcrumb">
+            <Link screen={ Screen.Instance } params={ { concept: concept , instance: item, widget: InstanceScreen.Mashups } }>
+                <span class="item-name">
+                    { item }
+                </span>
+                <span class="delimiter">
+                    >
+                </span>
+            </Link>
+            <div>
+                { currentWidget.name || currentWidget }
+            </div>
+        </div>
         <div class="nav">
             <div on:click={ () => updateIndex(-1) }>
                 &lt;
@@ -98,11 +111,6 @@
             <div on:click={ () => updateIndex(1) }>
                 &gt;
             </div>
-        </div>
-        <div class="drilldown">
-            <Link  screen={ Screen.Instance } params={ { concept: concept , instance: item, widget: InstanceScreen.Mashups } }>
-                &#x25BE;
-            </Link>
         </div>
     </div>
     <div class="content">

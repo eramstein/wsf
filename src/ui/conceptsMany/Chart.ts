@@ -63,7 +63,9 @@ const MAX_BUBBLE_SIZE = 50;
 const DEFAULT_BUBBLE_SIZE = 10;
 const MAX_PLATE_HEIGHT = 100;
 
-function onCanvasClick(canvas, evt, onBubbleClick, bubbles : Bubble[]) {
+let selectedBubble = null;
+
+function onCanvasClick(canvas, ctx, evt, onBubbleClick, bubbles : Bubble[]) {
     evt.preventDefault();
     const rect = canvas.getBoundingClientRect();
     const pos = {
@@ -78,8 +80,15 @@ function onCanvasClick(canvas, evt, onBubbleClick, bubbles : Bubble[]) {
     );
     if (clickedBubbles.length > 0) {
         onBubbleClick(clickedBubbles[0].id);
+        if (selectedBubble) {
+            resetBubble(ctx, selectedBubble);
+        }
+        highlightBubble(ctx, clickedBubbles[0]);
+        selectedBubble = clickedBubbles[0];
     } else {
         onBubbleClick(null);
+        resetBubble(ctx, selectedBubble);
+        selectedBubble = null;
     }
 }
 
@@ -90,7 +99,7 @@ export const bubbleChart = function(onBubbleClick) {
     canvas.style.width ='100%';
     canvas.width  = canvas.offsetWidth;
     canvas.height = document.body.clientHeight - 110; // TODO: magic number which is the 2 menus height on top
-    canvas.oncontextmenu = canvas.onclick = e => onCanvasClick(canvas, e, onBubbleClick, bubbles);
+    canvas.oncontextmenu = canvas.onclick = e => onCanvasClick(canvas, ctx, e, onBubbleClick, bubbles);
     
     const margin = { top: 40, right: 20, bottom: 20, left: 20 };
 
@@ -294,7 +303,7 @@ export const bubbleChart = function(onBubbleClick) {
             oldBubblesValues = {};
             bubbles.forEach(d => {
                 oldBubblesValues[d.id] = d;
-            });            
+            });
         }
 
         // ANIMATION - start loop
@@ -315,6 +324,16 @@ function colorLegend(ctx, colorScale) {
         ctx.fillStyle = '#333';
         ctx.fillText(c[0], 40 + i * 120, 15);
     });
+}
+
+function highlightBubble(ctx, b : Bubble) {
+    ctx.fillStyle = 'red';
+    ctx.fillRect(b.x, b.y, b.width, b.height);
+}
+
+function resetBubble(ctx, b : Bubble) {
+    ctx.fillStyle = b.color;
+    ctx.fillRect(b.x, b.y, b.width, b.height);
 }
 
 function randomPos(data : Bubble[], helpers) : Bubble[] {

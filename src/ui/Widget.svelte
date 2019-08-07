@@ -3,7 +3,8 @@
         LEVEL 1: simple template
             pass HTML in the template prop. double mustaches like {{ mana_cost }} get replaced with the content of data
             example of template:
-            <style>div{color:red;}</style> <div>hello {{name}}</div>
+            <style>div{color:red;}</style>
+            <div>hello {{name}}</div>
 
         LEVEL 2: computed props
             pass HTML in the template prop + a script in the script prop
@@ -17,12 +18,12 @@
         LEVEL 3: computed node
             pass a function that will compute the whole node to be rendered directly
             it is a self-executing anonymous function returning another f2 function
-            f2 receives the entity's data as a parameter and returns teh node
+            f2 receives the entity's data and State as a parameters and returns the node
             example:
-            (() => data => { 
+            (() => (data, State) => { 
                 const node = document.createElement('div');
                 node.innerHTML='itsa me, ' + data.name;
-                node.onclick=()=>{ alert('ciao'); };
+                node.onclick=()=>{ State.sayHello('ciao'); };
                 return node; 
             })()
 
@@ -58,7 +59,7 @@
         }
         if (computedNode) {
             //TO TEST: can the computed node code use State.get() ? instead of passing all data, just an ID
-            createdNode = eval(computedNode)(data);
+            createdNode = eval(computedNode)(data, State);
         } else {
             const allData = { ...data, ...computed };
             function replacer(match, p1) {

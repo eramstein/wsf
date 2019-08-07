@@ -59,7 +59,7 @@
         top: 0;
         right: 0;
         border: 1px solid #ccc;
-        background-color: #eee;
+        background-color: #f3f3f3;
         width: 520px;
         height: 750px;
     }
