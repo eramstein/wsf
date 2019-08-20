@@ -47,7 +47,7 @@
 
 <style>
     .top-bar-container {
-        height:100%;
+        height:50px;
         background-color: rgb(49, 15, 15);
         border-bottom: 1px solid #222;
     }

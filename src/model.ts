@@ -31,6 +31,19 @@ export enum DataType {
     Text = "TEXT",
 }
 
+export enum NuggetType {
+    Instance = "INSTANCE",
+    Concept = "CONCEPT",
+    Set = "SET",
+    Attribute = "ATTRIBUTE",
+    Widget = "WIDGET",
+}
+
+export enum OptionType {
+    Endpoint = "ENDPOINT",
+    Nugget = "NUGGET",
+}
+
 export enum Cardinality {
     One = "one",
     Many = "many",
@@ -51,6 +64,7 @@ export interface UI {
     lastOpenConcept?: string;
     lastOpenWidget?: string;
     history: NavigationStep[];
+    search?: Search;
 }
 
 export interface Data {
@@ -170,4 +184,49 @@ export interface MashupConfig {
     id: number;
     name: string;
     widgets: string[];
+}
+
+export interface Search {    
+    activeText: string;
+    nuggets: Nugget[];
+    options: Option[];
+}
+
+export interface Nugget {    
+    type: NuggetType;
+    props: NuggetPropsInstance | NuggetPropsConcept | NuggetPropsAttribute | NuggetPropsWidget | NuggetPropsSet;
+}
+
+export interface NuggetPropsInstance {    
+    concept: string;
+    instance: string;
+}
+
+export interface NuggetPropsConcept {    
+    concept: string;
+}
+
+export interface NuggetPropsAttribute {    
+    concept: string;
+    attribute: string;
+}
+
+export interface NuggetPropsWidget {    
+    concept: string;
+    widget: string;
+}
+
+export interface NuggetPropsSet {    
+    concept: string;
+    attributeValues: [{ attribute: string; value: string; }];
+}
+
+export interface Option {    
+    type: OptionType;
+    props: Nugget | Endpoint;
+}
+
+export interface Endpoint {    
+    text: string;
+    destination: Screen | ConceptScreen | InstanceScreen;
 }
