@@ -65,7 +65,12 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
                 }
             }  
         }
-        delete attributes[headers[j]].values;
+        
+        if (attributes[headers[j]].type === DataType.Categorical) {
+            attributes[headers[j]].values = Object.keys(attributes[headers[j]].values);
+        } else {
+            delete attributes[headers[j]].values;
+        }     
     }
     
     return {

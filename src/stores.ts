@@ -3,6 +3,7 @@ import { handleKeyPress } from "./keybinds";
 import { FullState, Screen, WidgetAuthoring } from "./model";
 import { mutateStateAfterNavigation, goBack } from "./logic/navigation";
 import { defineCustomElements, defineDataElement } from "./logic/customElements.js";
+import { buildSearchIndex } from "./logic/search";
 
 export const State = createFullState();
 
@@ -21,6 +22,7 @@ function createFullState() {
         goTo: (screen, params) => update(s => { mutateStateAfterNavigation(screen, params, s, false); saveState(); return s; }),
         goBack: () => update(s => { goBack(s); saveState(); return s; }),
         resetUI: () => update(s => { s.ui = getNewState().ui; saveState(); return s; }),
+        buildSearchIndex: () => update(s => { s.data.search = buildSearchIndex(s.data); saveState(); return s; }),
         
         setData: (concept, instance, attribute, value) => update(s => { s.data.concepts[concept].items[instance][attribute] = value; saveState(); return s; }),
         addConcept: concept => update(s => { s.data.concepts[concept.name] = concept; s.data.user.preferences.concepts[concept.name] = {lists: [], mashups: [], filters: {}}; saveState(); return s; }),
@@ -61,6 +63,10 @@ function getNewState(): FullState {
                 },
             },
             articles: {},
+            search: {
+                words: [],
+                definitions: {},
+            }
         },
         ui: {
             openScreen: Screen.Home,

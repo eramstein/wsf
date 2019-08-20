@@ -44,6 +44,18 @@ export enum OptionType {
     Nugget = "NUGGET",
 }
 
+export enum SearchWordType {
+    Instance = "INSTANCE",
+    Concept = "CONCEPT",
+    Attribute = "ATTRIBUTE",
+    Widget = "WIDGET",
+    AttributeValue = "ATTRIBUTE_VALUE",
+    Relation = "RELATION",
+    Mashup = "MASHUP",
+    List = "LIST",
+    Article = "ARTICLE",
+}
+
 export enum Cardinality {
     One = "one",
     Many = "many",
@@ -71,6 +83,10 @@ export interface Data {
     concepts: { [key: string] : Concept };
     articles: { [key: string] : Article };
     user: User;
+    search: {
+        words: string[];
+        definitions: { [key: string] : SearchWordDefinition[] };
+    };
 }
 
 export interface Article {
@@ -108,6 +124,7 @@ export interface Concept {
 export interface Attribute {
     name: string;
     type: DataType;
+    values?: string[];
 }
 
 export interface Item {
@@ -223,10 +240,18 @@ export interface NuggetPropsSet {
 
 export interface Option {    
     type: OptionType;
-    props: Nugget | Endpoint;
+    nuggets: Nugget[];
+    endpoint?: Endpoint;
 }
 
 export interface Endpoint {    
     text: string;
     destination: Screen | ConceptScreen | InstanceScreen;
+}
+
+export interface SearchWordDefinition {    
+    type: SearchWordType;
+    concept?: string;
+    context?: string; // e.g. attribute name
+    value: string; // instance name, widget name, attribute value...
 }
