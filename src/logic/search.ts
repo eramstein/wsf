@@ -1,4 +1,57 @@
-import { Data, SearchWordDefinition, SearchWordType, Cardinality } from "../model";
+import { Data, SearchWordDefinition, ConceptScreen, InstanceScreen, SearchWordType } from "../model";
+
+export enum NuggetType {
+    Instance = "INSTANCE",
+    Concept = "CONCEPT",
+    Set = "SET",
+    Attribute = "ATTRIBUTE",
+    Widget = "WIDGET",
+}
+
+export enum OptionType {
+    Endpoint = "ENDPOINT",
+    Nugget = "NUGGET",
+}
+
+export interface Nugget {    
+    type: NuggetType;
+    props: NuggetPropsInstance | NuggetPropsConcept | NuggetPropsAttribute | NuggetPropsWidget | NuggetPropsSet;
+}
+
+export interface NuggetPropsInstance {    
+    concept: string;
+    instance: string;
+}
+
+export interface NuggetPropsConcept {    
+    concept: string;
+}
+
+export interface NuggetPropsAttribute {    
+    concept: string;
+    attribute: string;
+}
+
+export interface NuggetPropsWidget {    
+    concept: string;
+    widget: string;
+}
+
+export interface NuggetPropsSet {    
+    concept: string;
+    attributeValues: [{ attribute: string; value: string; }];
+}
+
+export interface Option {    
+    type: OptionType;
+    nuggets: Nugget[];
+    endpoint?: Endpoint;
+}
+
+export interface Endpoint {    
+    text: string;
+    destination: Screen | ConceptScreen | InstanceScreen;
+}
 
 export function buildSearchIndex(data : Data) {
 

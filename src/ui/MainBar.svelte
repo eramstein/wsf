@@ -3,6 +3,7 @@
     import { Screen, ConceptScreen, InstanceScreen, DataType } from '../model';
     import { capitalize } from '../utils';
     import Link from './Link.svelte'
+    import Search from './Search.svelte'
     import { FILTER_LABEL_WIDTH, FILTER_VALUE_WIDTH, FILTER_VALUE_PADDING } from './conceptsMany/filters';
 
     const filtersWidth = FILTER_LABEL_WIDTH + FILTER_VALUE_WIDTH + FILTER_VALUE_PADDING;
@@ -53,6 +54,7 @@
     }
     .home-bar {
         height: 100%;
+        position: relative;
     }
     .home-icon {
         padding-right: 5px;
@@ -125,13 +127,18 @@
         padding: 0px 16px;
         color: #eee;
     }
+    .search {
+        position: absolute;
+        top: 5px;
+        right: 12px;
+    }
 </style>
 
 <div class="top-bar-container">
     {#if $State.ui.openScreen === Screen.Home || $State.ui.openScreen === Screen.Concepts || $State.ui.openScreen === Screen.Articles }
         <div class="home-bar">
             <div>
-                <img style="width:30px;height:30px;filter: invert(90%);" src={homeIconSrc} />
+                <img alt="home" style="width:30px;height:30px;filter: invert(90%);" src={homeIconSrc} />
             </div>
             <div class="app-name">
                 MOSAIC
@@ -147,6 +154,9 @@
                         Articles                
                     </div>
                 </Link>
+            </div>
+            <div class="search">
+                <Search />
             </div>
         </div>
     {:else}
