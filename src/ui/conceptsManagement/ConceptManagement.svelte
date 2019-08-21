@@ -5,7 +5,7 @@
 
     $: concept = $State.data.concepts[$State.ui.screenParameters.concept];
     
-    $: {
+    $: {        
         if (!concept.banner) {
             concept.banner = '';
         }
@@ -25,9 +25,9 @@
     }
 
     // TODO: slow
-    function loadRelations(e) {
+    function loadRelations(e, concept) {
         e.preventDefault();
-
+        
         const input = e.dataTransfer;
 
         if (input.files && input.files[0]) {
@@ -107,7 +107,7 @@
             <div class="import" type="file"
                 ondragenter="event.stopPropagation(); event.preventDefault();"
                 ondragover ="event.stopPropagation(); event.preventDefault();"
-                on:drop|preventDefault={ loadRelations }>
+                on:drop|preventDefault={ e => loadRelations(e, concept) }>
                 Import relations
             </div>
         </div>

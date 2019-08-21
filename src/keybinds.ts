@@ -15,9 +15,9 @@ export function handleKeyPress(event) {
     // }
 
     //t -> temp function
-    // if (event.charCode === 116) {
-    //     State.buildSearchIndex();
-    // }    
+    if (event.charCode === 116) {
+        State.buildSearchIndex();
+    }    
 }
 
 

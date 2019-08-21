@@ -252,6 +252,6 @@ export interface Endpoint {
 export interface SearchWordDefinition {    
     type: SearchWordType;
     concept?: string;
-    context?: string; // e.g. attribute name
+    data?: any; // e.g. attribute name
     value: string; // instance name, widget name, attribute value...
 }
