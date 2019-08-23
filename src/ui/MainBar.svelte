@@ -197,7 +197,7 @@
                     on:click={ () => goToInstance(1) }>
                     { nextItem } ...
                 </div>
-                {/if}                               
+                {/if}
             {/if}
             {#if $State.ui.openScreen === Screen.Article}
                 {#if $State.ui.screenParameters.instance}

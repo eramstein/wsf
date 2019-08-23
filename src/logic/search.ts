@@ -1,4 +1,6 @@
-import { Data, SearchWordDefinition, ConceptScreen, InstanceScreen, SearchWordType } from "../model";
+import { State } from '../stores';
+import { get } from "svelte/store";
+import { Data, SearchWordDefinition, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState } from "../model";
 
 export enum NuggetType {
     Instance = "INSTANCE",
@@ -8,12 +10,9 @@ export enum NuggetType {
     Widget = "WIDGET",
 }
 
-export enum OptionType {
-    Endpoint = "ENDPOINT",
-    Nugget = "NUGGET",
-}
-
-export interface Nugget {    
+export interface Nugget {
+    ID?: number;
+    replaceID?: number;
     type: NuggetType;
     props: NuggetPropsInstance | NuggetPropsConcept | NuggetPropsAttribute | NuggetPropsWidget | NuggetPropsSet;
 }
@@ -40,17 +39,6 @@ export interface NuggetPropsWidget {
 export interface NuggetPropsSet {    
     concept: string;
     attributeValues: [{ attribute: string; value: string; }];
-}
-
-export interface Option {    
-    type: OptionType;
-    nuggets: Nugget[];
-    endpoint?: Endpoint;
-}
-
-export interface Endpoint {    
-    text: string;
-    destination: Screen | ConceptScreen | InstanceScreen;
 }
 
 export function buildSearchIndex(data : Data) {
@@ -192,18 +180,110 @@ export function buildSearchIndex(data : Data) {
 
     });
 
+    let key, keys = Object.keys(definitions);
+    let n = keys.length;
+    let lowerCaseDefinitions={}
+    while (n--) {
+        key = keys[n];
+        lowerCaseDefinitions[key.toLowerCase()] = definitions[key];
+    }
+
     return {
-        words,
-        definitions,
+        words: words.map(w => w.toLocaleLowerCase()),
+        definitions: lowerCaseDefinitions,
     };
 }
 
-// example relation search: star wars actors
-// star wars => franchise value -> movies set
-// actors => relations (lead roles, cameos, all...)
+export function searchIndex(search : string, currentNuggets: Nugget[]) : Nugget[] {
+    const savedData : FullState = get(State);
+    const index = savedData.data.search;
+    const curatedText = search.toLowerCase();
 
-// words.forEach(v => {
-//     if (search.indexOf(v) >= 0 || v.indexOf(search) >= 0) {                
-//         results.push(dictionary[v]);
-//     }
-// });
+    let foundDefinitions : SearchWordDefinition[] = [];
+    index.words.forEach(v => {
+        if (curatedText.indexOf(v) >= 0 || v.indexOf(curatedText) >= 0) {                
+            foundDefinitions = foundDefinitions.concat(index.definitions[v]);
+        }
+    });   
+
+    let nuggets : Nugget[] = foundDefinitions.map(def => {
+        if (def.type === SearchWordType.Instance) {
+            return {
+                type: NuggetType.Instance,
+                props: { concept: def.concept, instance: def.value },
+            };
+        }
+        if (def.type === SearchWordType.Attribute) {
+            return {
+                type: NuggetType.Attribute,
+                props: { concept: def.concept, attribute: def.value },
+            };
+        }
+        if (def.type === SearchWordType.AttributeValue) {
+            return {
+                type: NuggetType.Set,
+                props: {
+                    concept: def.concept,
+                    attributeValues: [{ attribute: def.data, value: def.value }],
+                },
+            };
+        }
+        if (def.type === SearchWordType.Widget) {
+            return {
+                type: NuggetType.Widget,
+                props: { concept: def.concept, widget: def.value },
+            };
+        }
+        // TODO: once filters handle relations, add many to many relationships 
+        if (def.type === SearchWordType.Relation
+            && def.data.cardinality === Cardinality.One) {
+            const foundRelation = findRelatedInstance(def, currentNuggets, savedData.data);
+            if (foundRelation) {
+                const { instance, replaceID } = foundRelation;
+                return {
+                    type: NuggetType.Instance,
+                    props: {
+                        concept: def.data.concept,
+                        instance,
+                    },
+                    replaceID,
+                };
+            } else  {
+                return null;
+            }
+            
+        }
+    });
+    
+    return nuggets.filter(n => !!n);
+}
+
+// relation has to be of cardinality One
+function findRelatedInstance(relation : SearchWordDefinition, currentNuggets: Nugget[], data : Data) : { instance: string, replaceID: number } {
+    // find an instance of the related concept in the current widgets
+    const instances = currentNuggets.filter(
+        nugget =>
+            nugget.type === NuggetType.Instance
+            && nugget.props.concept === relation.concept
+    );
+    if (instances.length === 0) {
+        return null;
+    }
+    const foundInstance = instances[instances.length - 1];
+    // @ts-ignore    
+    const foundInstanceName = foundInstance.props.instance;
+    // get its relation value
+    const instanceData = data.concepts[relation.concept].items[foundInstanceName];
+    const relatedInstance =
+        instanceData.__relations__ &&
+        instanceData.__relations__[relation.value] &&
+        instanceData.__relations__[relation.value].length > 0 &&
+        instanceData.__relations__[relation.value][0].item;
+    if (!relatedInstance) {
+        return null;
+    }
+    return { instance: relatedInstance, replaceID: foundInstance.ID };
+}
+
+// example relation search: star wars director picture
+// example of 1 -> many not doable yet (filters don't support relations)

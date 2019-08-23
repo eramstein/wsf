@@ -8,6 +8,8 @@ export const FILTER_VALUE_WIDTH = 150;
 export const FILTER_VALUE_PADDING = 40;
 export const CATEGORIES_LIMITED_DISPLAYED = 7;
 
+// TODO: allow filters based on relations (e.g. Star Wars actors)
+//       when coming from search or relations tab
 export interface FilterData {
     attribute: string;
     type: string;

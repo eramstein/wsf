@@ -1,9 +1,19 @@
 <script>
     import { State } from '../stores';
+    import { searchIndex } from '../logic/search';
     
     let activeText = '';
     let nuggets = [];
-    let otpions = [];
+    let options = [];
+
+    function search() {
+        let options = [];
+        if (activeText.length >= 3) {
+            options = searchIndex(activeText, nuggets);
+        }
+        console.log(options);
+        
+    }
 
 </script>
 
@@ -41,5 +51,12 @@
 </style>
 
 <div>
-	<input type="search" placeholder="Search" bind:value={activeText} />
+	<input type="search" placeholder="Search" bind:value={activeText} on:keyup={search} />
+    {#if options && options.length > 0 }
+    <div class="options-container">
+        {#each options as option }
+            <div>option</div>
+        {/each}
+    </div>
+    {/if}
 </div>
