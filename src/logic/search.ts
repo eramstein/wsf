@@ -188,8 +188,10 @@ export function buildSearchIndex(data : Data) {
         lowerCaseDefinitions[key.toLowerCase()] = definitions[key];
     }
 
+    words = Array.from(new Set(words));
+    
     return {
-        words: words.map(w => w.toLocaleLowerCase()),
+        words: words.map(w => w.toLowerCase()),
         definitions: lowerCaseDefinitions,
     };
 }
@@ -204,7 +206,7 @@ export function searchIndex(search : string, currentNuggets: Nugget[]) : Nugget[
         if (curatedText.indexOf(v) >= 0 || v.indexOf(curatedText) >= 0) {                
             foundDefinitions = foundDefinitions.concat(index.definitions[v]);
         }
-    });   
+    });    
 
     let nuggets : Nugget[] = foundDefinitions.map(def => {
         if (def.type === SearchWordType.Instance) {
