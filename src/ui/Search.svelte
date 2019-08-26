@@ -1,6 +1,6 @@
 <script>
     import { State } from '../stores';
-    import { searchIndex, NuggetType } from '../logic/search';
+    import { searchIndex, NuggetType, addNugget, navigateFromSearch } from '../logic/search';
 
     const MAX_OPTIONS_PER_TYPE = 5;
     
@@ -9,6 +9,7 @@
     let foundNuggets = [];
     $: foundByType = {};
     $: options = [];
+    $: activeOption = -1;
 
     function sortOptions(a, b) {
         const aSort = a.type + a.props.instance;
@@ -20,6 +21,28 @@
             return 1;
         }
         return 0;
+    }
+
+    function onSearchInputKeyUp(event) {        
+        if (event.key === 'ArrowDown') {
+            activeOption++;
+        }
+        if (event.key === 'ArrowUp') {
+            activeOption--;
+        }
+        if (event.key === 'Enter') {
+            if (options.length === 0) {
+                navigateFromSearch(nuggets);
+                
+            } else {
+                if (activeOption >= 0) {
+                    selectOption(options[activeOption]);
+                } else {
+                    selectOption(options[0]);
+                }
+            }
+        }
+        search();
     }
 
     function search() {
@@ -51,7 +74,14 @@
                     options.push({ type: 'MORE', props: nugget.props })
                 }
             });
-        console.log(options);
+    }
+
+    function selectOption(option) {
+        nuggets = addNugget(option, nuggets);
+        options = [];
+        activeText = '';
+        activeOption = -1;
+        document.getElementById('search-input').focus();
     }
 
 </script>
@@ -100,7 +130,7 @@
         z-index: 1;
         flex-direction: column;
     }
-    .option img {
+    .option img, .nugget img {
         height: 20px;
         width: 15px;
         margin-right: 5px;
@@ -109,45 +139,79 @@
         color: #666;
         padding-right: 10px;
     }
+    .nuggets-container {        
+        background-color: #fff;
+        position: absolute;
+        width: 100%;
+        display: flex;
+        z-index: 1;
+        flex-direction: row;
+    }
+
+    .active {
+        background-color: steelblue;
+    }
 </style>
 
 <div class="search">
 	<input type="search"
+        id="search-input"
         placeholder="Search"
-        style="width:{activeText.length > 0 ? '600px' : null}"
-        bind:value={activeText} on:keyup={search} />
+        style="width:{activeText.length > 0 || nuggets.length > 0 ? '600px' : null}"
+        bind:value={activeText} on:keyup={onSearchInputKeyUp} />
+
+    {#if nuggets && nuggets.length > 0 }
+    <div class="nuggets-container">
+        {#each nuggets as nugget }
+            <div class="nugget">
+            {#if nugget.type === NuggetType.Instance}                
+                <img alt=""
+                    src={$State.data.concepts[nugget.props.concept].icon}
+                />
+                { nugget.props.instance }                
+            {/if}
+            {#if nugget.type === NuggetType.Attribute}
+                <span class="nugget-type-name">{ nugget.props.concept } attribute -</span>{ nugget.props.attribute }
+            {/if}
+            {#if nugget.type === NuggetType.Widget}
+                <span class="nugget-type-name">{ nugget.props.concept } widget -</span>{ nugget.props.widget }
+            {/if}
+            {#if nugget.type === NuggetType.Set}
+                <span class="nugget-type-name">{ nugget.props.concept }</span>
+                {#each nugget.props.attributeValues as att }
+                    <span>{ att.attribute }: { att.value },</span>
+                {/each}
+            {/if}
+            </div>
+        {/each}
+    </div>
+    {/if}
+
     {#if options && options.length > 0 }
     <div class="options-container">
-        {#each options as option }
-            {#if option.type === NuggetType.Instance}
-                <div class="option">
+        {#each options as option, i }
+            <div class="option" class:active="{activeOption === i}"
+                on:click={() => selectOption(option)}>
+                {#if option.type === NuggetType.Instance}                
                     <img alt=""
                         src={$State.data.concepts[option.props.concept].icon}
                     />
-                    { option.props.instance }
-                </div>
-            {/if}
-            {#if option.type === 'MORE'}
-                <div class="option">
+                    { option.props.instance }                
+                {/if}
+                {#if option.type === 'MORE'}
                     {foundByType[NuggetType.Instance + option.props.concept] - MAX_OPTIONS_PER_TYPE} more { option.props.concept }...
-                </div>
-            {/if}
-            {#if option.type === NuggetType.Attribute}
-                <div class="option">
+                {/if}
+                {#if option.type === NuggetType.Attribute}
                     <span class="option-type-name">{ option.props.concept } attribute -</span>{ option.props.attribute }
-                </div>
-            {/if}
-            {#if option.type === NuggetType.Widget}
-                <div class="option">
+                {/if}
+                {#if option.type === NuggetType.Widget}
                     <span class="option-type-name">{ option.props.concept } widget -</span>{ option.props.widget }
-                </div>
-            {/if}
-            {#if option.type === NuggetType.Set}
-                <div class="option">
+                {/if}
+                {#if option.type === NuggetType.Set}
                     <span class="option-type-name">{ option.props.concept }</span>
                     { option.props.attributeValues[0].attribute }: { option.props.attributeValues[0].value }
-                </div>
-            {/if}
+                {/if}
+            </div>
         {/each}
     </div>
     {/if}

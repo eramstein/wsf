@@ -1,6 +1,6 @@
 import { State } from '../stores';
 import { get } from "svelte/store";
-import { Data, SearchWordDefinition, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState } from "../model";
+import { Data, SearchWordDefinition, Screen, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState } from "../model";
 
 export enum NuggetType {
     Instance = "INSTANCE",
@@ -14,7 +14,9 @@ export interface Nugget {
     ID?: number;
     replaceID?: number;
     type: NuggetType;
-    props: NuggetPropsInstance | NuggetPropsConcept | NuggetPropsAttribute | NuggetPropsWidget | NuggetPropsSet;
+    // note: the "any" is because of the polymorphism (annyoying with ts-ignore),
+    // the rest is here just for documentation purpose
+    props: any | NuggetPropsInstance | NuggetPropsConcept | NuggetPropsAttribute | NuggetPropsWidget | NuggetPropsSet;
 }
 
 export interface NuggetPropsInstance {    
@@ -285,6 +287,63 @@ function findRelatedInstance(relation : SearchWordDefinition, currentNuggets: Nu
         return null;
     }
     return { instance: relatedInstance, replaceID: foundInstance.ID };
+}
+
+export function addNugget(nugget : Nugget, currentNuggets: Nugget[]) : Nugget[] {
+    let newNuggets = [];
+    if (nugget.type === NuggetType.Attribute) {
+        newNuggets = currentNuggets.concat(nugget);
+    }
+    if (nugget.type === NuggetType.Concept) {
+        // TODO - not useful for now
+    }
+    if (nugget.type === NuggetType.Instance) {
+        newNuggets = currentNuggets.concat(nugget);
+    }
+    if (nugget.type === NuggetType.Set) {
+        // if there is already a set on the same concept, combine filters
+        let conceptFilter = null;
+        let conceptFilterIndex = null;      
+        currentNuggets.forEach((n, i) => {
+            if (n.type === NuggetType.Set && n.props.concept === nugget.props.concept) {
+                conceptFilter = {
+                    type: NuggetType.Set,
+                    props: {
+                        concept: nugget.props.concept,                        
+                        attributeValues:
+                            n.props.attributeValues
+                                .concat(nugget.props.attributeValues),
+                    },
+                };
+                conceptFilterIndex = i;
+            }
+        });
+        if (conceptFilter) {
+            currentNuggets[conceptFilterIndex] = conceptFilter;
+            newNuggets = currentNuggets;
+        } else {
+            newNuggets = currentNuggets.concat(nugget);
+        }
+    }
+    if (nugget.type === NuggetType.Widget) {
+        newNuggets = currentNuggets.concat(nugget);
+    }
+    return newNuggets;
+}
+
+export function navigateFromSearch(nuggets: Nugget[]) {
+    console.log(nuggets);
+
+    // 1 instance => instance mashups
+    if (nuggets.length === 1 &&
+        nuggets[0].type === NuggetType.Instance) {            
+            State.goTo(Screen.Instance, {
+                concept: nuggets[0].props.concept,
+                instance: nuggets[0].props.instance,
+                widget: InstanceScreen.Mashups,
+            });
+    }
+    
 }
 
 // example relation search: star wars director picture
