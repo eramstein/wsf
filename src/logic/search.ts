@@ -1,6 +1,6 @@
 import { State } from '../stores';
 import { get } from "svelte/store";
-import { Data, SearchWordDefinition, Screen, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState } from "../model";
+import { Data, ListConfig, SearchWordDefinition, Screen, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState, DataType } from "../model";
 
 export enum NuggetType {
     Instance = "INSTANCE",
@@ -332,17 +332,66 @@ export function addNugget(nugget : Nugget, currentNuggets: Nugget[]) : Nugget[] 
 }
 
 export function navigateFromSearch(nuggets: Nugget[]) {
+    const savedData : FullState = get(State);
     console.log(nuggets);
 
-    // 1 instance => instance mashups
+    const instances = nuggets.filter(n => n.type === NuggetType.Instance);
+    const attributes = nuggets.filter(n => n.type === NuggetType.Attribute);
+    const widgets = nuggets.filter(n => n.type === NuggetType.Widget);
+
+    const allChartAttributes = attributes.reduce((agg, curr) => {
+        const attributeType = savedData.data.concepts[curr.props.concept].attributes[curr.props.attribute].type;
+        if (attributeType !== DataType.Numeric && attributeType !== DataType.Categorical) {
+            agg = false;
+        }
+        return agg;
+    }, true);
+
+    const sparklines = widgets.reduce((agg, curr) => {
+        const widget = savedData.data.concepts[curr.props.concept].widgets.one[curr.props.widget];
+        if (widget && widget.inLists) {
+            agg.push(widget);
+        }
+        return agg;
+    }, []);
+
+    // if there is a set, update filters for that concept
+
+    // 1 instance => instance default
     if (nuggets.length === 1 &&
-        nuggets[0].type === NuggetType.Instance) {            
+        instances.length === 1) {            
             State.goTo(Screen.Instance, {
                 concept: nuggets[0].props.concept,
                 instance: nuggets[0].props.instance,
                 widget: InstanceScreen.Mashups,
             });
     }
+
+    // 1 instance + 1 mashup => mashup
+    // TODO
+
+    // 1 instance + attributes => data widget
+
+    // 1 instance + widgets => pre-configured mashup
+
+    // N instances + widgets => custom mashup    
+
+    // 1 set => default list
+
+    // 1 set + list => list
+    // TODO
+
+    // 1 set + chart attributes => pre-configured chart
+
+    // 1 set + non-chart attributes or sparlines => pre-configured list
+
+    // 1 set + 1 one-widget => cards
+
+    // 1 set + 1 many-widget => many-widget
+
+    // 1 article
+
+    // article tags
     
 }
 
