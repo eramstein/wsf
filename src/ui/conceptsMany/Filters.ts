@@ -92,9 +92,9 @@ export function setDefaultFilterConfig(concept : Concept) {
     State.updateConceptFilters(concept.name, filtersPreferences);
 }
 
-export function getFilteredItems(preferences : FilterConfig) {
+export function getFilteredItems(preferences : { [key: string] : FilterConfig }, concept : string) {    
     const savedData = get(State);
-    const allItems = Object.values(savedData.data.concepts[savedData.ui.screenParameters.concept].items);
+    const allItems = Object.values(savedData.data.concepts[concept].items);
     const preferenceArray = Object.entries(preferences).map(a => { return { name: a[0], ...a[1] } });    
     const filteredItems = allItems.filter(item => {
         let valid = true;
@@ -124,7 +124,7 @@ export function toggleCategory(attribute, category) {
     }
 
     State.updateConceptFilters(conceptName, preferences);
-    State.filterData(getFilteredItems(preferences));
+    State.filterData(getFilteredItems(preferences, conceptName));
 }
 
 export function setNumericRange(attribute, from, to) {
@@ -135,7 +135,7 @@ export function setNumericRange(attribute, from, to) {
     preferences[attribute].to = to;
     
     State.updateConceptFilters(conceptName, preferences);
-    State.filterData(getFilteredItems(preferences));
+    State.filterData(getFilteredItems(preferences, conceptName));
 }
 
 export function toggleAttribute(attribute) {

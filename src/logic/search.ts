@@ -1,6 +1,7 @@
 import { State } from '../stores';
 import { get } from "svelte/store";
-import { Data, ListConfig, SearchWordDefinition, Screen, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState, DataType } from "../model";
+import { Data, ListConfig, SearchWordDefinition, Screen, ConceptScreen, InstanceScreen, SearchWordType, Cardinality, ConceptRelation, FullState, DataType, FilterConfig } from "../model";
+import { getFilteredItems } from '../ui/conceptsMany/Filters';
 
 export enum NuggetType {
     Instance = "INSTANCE",
@@ -338,6 +339,7 @@ export function navigateFromSearch(nuggets: Nugget[]) {
     const instances = nuggets.filter(n => n.type === NuggetType.Instance);
     const attributes = nuggets.filter(n => n.type === NuggetType.Attribute);
     const widgets = nuggets.filter(n => n.type === NuggetType.Widget);
+    const sets = nuggets.filter(n => n.type === NuggetType.Set);
 
     const allChartAttributes = attributes.reduce((agg, curr) => {
         const attributeType = savedData.data.concepts[curr.props.concept].attributes[curr.props.attribute].type;
@@ -356,6 +358,34 @@ export function navigateFromSearch(nuggets: Nugget[]) {
     }, []);
 
     // if there is a set, update filters for that concept
+    if (sets.length === 1) {
+        const set = sets[0];
+        const oldFilters = savedData.data.user.preferences.concepts[set.props.concept].filters;
+        let newFilters : { [key: string] : FilterConfig } = {};
+        let searchFilters = {};
+        set.props.attributeValues.forEach(av => {
+            if (!searchFilters[av.attribute]) {
+                searchFilters[av.attribute] = {};
+            }
+            searchFilters[av.attribute][av.value] = true;
+        });
+        Object.entries(oldFilters).forEach(oldFilter => {
+            if (searchFilters[oldFilter[0]]) {
+                newFilters[oldFilter[0]] = {
+                    collapsed: false,
+                    limited: false,
+                    from: null,
+                    to: null,
+                    categories: searchFilters[oldFilter[0]],
+                };
+            } else {
+                //@ts-ignore
+                newFilters[oldFilter[0]] = oldFilter[1]; 
+            }
+        });
+        State.updateConceptFilters(set.props.concept, newFilters);
+        State.filterData(getFilteredItems(newFilters, set.props.concept));
+    }
 
     // 1 instance => instance default
     if (nuggets.length === 1 &&
@@ -377,6 +407,13 @@ export function navigateFromSearch(nuggets: Nugget[]) {
     // N instances + widgets => custom mashup    
 
     // 1 set => default list
+    if (nuggets.length === 1 &&
+        sets.length === 1) {            
+            State.goTo(Screen.Concept, {
+                concept: nuggets[0].props.concept,
+                widget: ConceptScreen.Lists,
+            });
+    }
 
     // 1 set + list => list
     // TODO
