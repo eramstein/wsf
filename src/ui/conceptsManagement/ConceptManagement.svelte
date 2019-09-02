@@ -87,6 +87,7 @@
         width: 90px;
         padding-right: 10px;
         font-weight: bold;
+        white-space: nowrap;
     }
     .images div input {
         width: 300px;

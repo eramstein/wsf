@@ -16,19 +16,24 @@
     let defaultPrefs = $State.data.user.preferences.concepts[concept.name];
     let defaultMashups = defaultPrefs && defaultPrefs.mashups;
 
-    let config = getDefaultConfig(concept.widgets.one, defaultMashups);
+    let config = getDefaultConfig(concept.widgets.one, defaultMashups);    
 
     $: preferences = $State.data.user.preferences.concepts[concept.name];
     $: mashups = preferences && preferences.mashups && preferences.mashups.length > 0 ? preferences.mashups : [config];
-
     $: selectedMashup = config.id;
+
+    $: customMashup = $State.ui.screenParameters.customMashup;
     
     let container;    
     let layout;
     let widgetsData = [];
 
-    afterUpdate(() => {
-        widgetsData = Object.values(concept.widgets.one).filter(w => config.widgets.indexOf(w.name) >= 0);
+    afterUpdate(() => {        
+        if (customMashup) {
+            widgetsData = Object.values(concept.widgets.one).filter(w => customMashup.indexOf(w.name) >= 0);
+        } else {
+            widgetsData = Object.values(concept.widgets.one).filter(w => config.widgets.indexOf(w.name) >= 0);
+        }        
         widgetsData = getLayoutSimplified(widgetsData);
     });    
 
@@ -197,9 +202,10 @@
 
 <div class="page" bind:this={container}>
 
+    {#if !customMashup }
     <div class="mashups-bar">
         <div class="mashup-tabs">
-            {#if !mashups }                
+            {#if !mashups}           
                 <div class="selected">{ config.name }</div>
             {:else}
                 {#each mashups as mashup (mashup.id) }
@@ -215,7 +221,8 @@
                 <div class="add-mashup" on:click={ () => addMashup() }>+</div>
             {/if}
         </div>
-    </div>  
+    </div> 
+    {/if}
 
     <div class="container">
         {#if showConfig === true }

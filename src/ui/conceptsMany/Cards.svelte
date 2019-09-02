@@ -9,9 +9,10 @@
     
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
-    let widgets = Object.values(concept.widgets.one);
-    let lastOpenWidget = $State.ui.lastOpenWidget && widgets.filter(w => w.name === $State.ui.lastOpenWidget)[0];    
-    let widget = widgets.length > 0 && (lastOpenWidget || widgets[0]);
+    let widgets = Object.values(concept.widgets.one);    
+    let lastOpenWidget = $State.ui.lastOpenWidget && widgets.filter(w => w.name === $State.ui.lastOpenWidget)[0];   
+    let widgetToOpen = $State.ui.screenParameters.defaultWidget || lastOpenWidget;
+    let widget = widgets.length > 0 && (widgetToOpen || widgets[0]);
 
     function addWidget() {
         State.openWidgetAuthoring({
@@ -53,6 +54,9 @@
     let columns = 3;
 
     afterUpdate(() => {
+
+        console.log(widget);
+        
         
         if (!widget) {
             return false;
@@ -126,7 +130,6 @@
         font-size: 24px;
         font-weight: bold;
         min-width: 30px !important;
-        align-items: baseline  !important;
     }
 </style>
 

@@ -16,7 +16,7 @@ export function handleKeyPress(event) {
 
     //t -> temp function
     if (event.charCode === 116) {
-        //State.resetUI();
+        //State.buildSearchIndex();
     }    
 }
 

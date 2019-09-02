@@ -31,9 +31,13 @@
             widgetAuthoring.script = null;
         } else {
             widgetAuthoring.computedNode = null;
-        }
-        if (widgetAuthoring.widget.props.length > 0) {
-            widgetAuthoring.widget.props = widgetAuthoring.widget.props.join(',').replace(/ /g,'_').split(',');
+        }        
+        let props = widgetAuthoring.widget.props;
+        if (props.length > 0) {
+            if (Array.isArray(props)) {
+                 props = props.join(',');
+            }
+            props = props.replace(/ /g,'_').split(',');
         }
         State.deleteWidget(initialName);
         State.saveWidget();

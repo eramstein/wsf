@@ -83,12 +83,22 @@
     }
 
     $: items = getList(filteredItems, concept.attributes, config);
-    $: displayedColumns = Object.values(config.columns).filter(c => c.display);
-    $: displayedWidgets = config.widgets ?
-        Object.entries(config.widgets)
-            .filter(c => c[1] === true)
-            .map(c => concept.widgets.one[c[0]])
-     : [];
+
+    $: customList = $State.ui.screenParameters.customList;
+
+    $: displayedColumns = customList ?
+        customList.attributes.map(a => { return { name: a, filterValue: null, display: true } })
+        :
+        Object.values(config.columns).filter(c => c.display);
+
+    $: displayedWidgets = customList ?
+        customList.sparklines
+        :
+            config.widgets ?
+            Object.entries(config.widgets)
+                .filter(c => c[1] === true)
+                .map(c => concept.widgets.one[c[0]])
+            : [];
 
     $: selectedList = config.id;
         
@@ -162,7 +172,6 @@
         font-size: 24px;
         font-weight: bold;
         min-width: 30px !important;
-        align-items: baseline  !important;
     }
     .config {
         padding: 10px 20px;
@@ -224,6 +233,8 @@
 </style>
 
 <div>
+
+    {#if !customList }
     <div class="lists-bar">
         <div class="list-tabs">
             {#if !lists }                
@@ -243,6 +254,7 @@
             {/if}
         </div>
     </div>
+    {/if}
     
     {#if showConfig === true }
         <div class="config">

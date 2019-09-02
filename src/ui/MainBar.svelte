@@ -64,18 +64,21 @@
         height: 23px;
     }
     .breadcrumb {
-        height: 20px;        
+        height: 20px;
+        padding-bottom: 2px;       
     }    
     .breadcrumb-delimiter, .breadcrumb-option {
         font-size: 12px;
         color: #eee;        
     }
     .breadcrumb-delimiter {
-        padding-right: 5px;       
+        padding-right: 5px;
+        padding-top: 3px;      
     }
     .breadcrumb-option {
         cursor: pointer;
         padding-right: 5px;
+        padding-top: 3px;
     }
     .breadcrumb-option-toneddown {
         color: #999;

@@ -291,6 +291,9 @@ function findRelatedInstance(relation : SearchWordDefinition, currentNuggets: Nu
 }
 
 export function addNugget(nugget : Nugget, currentNuggets: Nugget[]) : Nugget[] {
+
+    nugget.ID = Math.floor(Math.random() * 1000000000000);
+
     let newNuggets = [];
     if (nugget.type === NuggetType.Attribute) {
         newNuggets = currentNuggets.concat(nugget);
@@ -329,12 +332,16 @@ export function addNugget(nugget : Nugget, currentNuggets: Nugget[]) : Nugget[] 
     if (nugget.type === NuggetType.Widget) {
         newNuggets = currentNuggets.concat(nugget);
     }
+
+    // if the nugget replaces another, remove it
+    if (nugget.replaceID) {
+        newNuggets = newNuggets.filter(n => n.ID !== nugget.replaceID);
+    }
     return newNuggets;
 }
 
 export function navigateFromSearch(nuggets: Nugget[]) {
     const savedData : FullState = get(State);
-    console.log(nuggets);
 
     const instances = nuggets.filter(n => n.type === NuggetType.Instance);
     const attributes = nuggets.filter(n => n.type === NuggetType.Attribute);
@@ -373,7 +380,7 @@ export function navigateFromSearch(nuggets: Nugget[]) {
             if (searchFilters[oldFilter[0]]) {
                 newFilters[oldFilter[0]] = {
                     collapsed: false,
-                    limited: false,
+                    limited: true,
                     from: null,
                     to: null,
                     categories: searchFilters[oldFilter[0]],
@@ -401,16 +408,27 @@ export function navigateFromSearch(nuggets: Nugget[]) {
     // TODO
 
     // 1 instance + attributes => data widget
+    // TODO
 
     // 1 instance + widgets => pre-configured mashup
+    if (widgets.length > 0 &&
+        instances.length === 1) {            
+            State.goTo(Screen.Instance, {
+                concept: nuggets[0].props.concept,
+                instance: nuggets[0].props.instance,
+                widget: InstanceScreen.Mashups,
+                customMashup: widgets.map(w => w.props.widget),
+            });
+    }
 
-    // N instances + widgets => custom mashup    
+    // N instances + widgets => custom mashup
+    // TODO
 
     // 1 set => default list
     if (nuggets.length === 1 &&
         sets.length === 1) {            
             State.goTo(Screen.Concept, {
-                concept: nuggets[0].props.concept,
+                concept: sets[0].props.concept,
                 widget: ConceptScreen.Lists,
             });
     }
@@ -419,16 +437,52 @@ export function navigateFromSearch(nuggets: Nugget[]) {
     // TODO
 
     // 1 set + chart attributes => pre-configured chart
+    if (attributes.length > 0 &&
+        allChartAttributes &&
+        sets.length === 1) {
+            const atts = attributes.map(a => a.props.attribute);
+            State.updateChartConfig({
+                ...savedData.ui.chartConfig,
+                posBy1: atts[0],
+                posBy2: atts.length > 1 ? atts[1] : null,
+            });
+            State.goTo(Screen.Concept, {
+                concept: sets[0].props.concept,
+                widget: ConceptScreen.Charts,
+            });
+    }
 
     // 1 set + non-chart attributes or sparlines => pre-configured list
+    if (attributes.length + sparklines.length > 0 &&
+        sets.length === 1) {            
+            State.goTo(Screen.Concept, {
+                concept: sets[0].props.concept,
+                widget: ConceptScreen.Lists,
+                customList: {
+                    sparklines: sparklines || [],
+                    attributes: attributes && attributes.map(a => a.props.attribute) || [],
+                },
+            });
+    }
 
     // 1 set + 1 one-widget => cards
+    if (widgets.length === 1 &&
+        sets.length === 1) {                        
+            State.goTo(Screen.Concept, {
+                concept: sets[0].props.concept,
+                widget: ConceptScreen.Cards,
+                defaultWidget: savedData.data.concepts[sets[0].props.concept].widgets.one[widgets[0].props.widget],
+            });
+    }
 
     // 1 set + 1 many-widget => many-widget
+    // TODO
 
     // 1 article
+    // TODO
 
     // article tags
+    // TODO
     
 }
 

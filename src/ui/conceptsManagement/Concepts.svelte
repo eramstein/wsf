@@ -63,13 +63,14 @@
         display: flex;
         flex-direction: column;
         align-self: flex-end;
-        height: 85px;
+        height: 80px;
         background-color: rgba(255, 255, 255, 0.8);
         width: 100%;
         bottom: 0;
         left: 0;
         position: absolute;
         padding-left: 20px;
+        padding-top: 10px;
     }
     .plus {
         font-size: 100px;
