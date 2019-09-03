@@ -14,13 +14,20 @@
     function sortOptions(a, b) {
         const aSort = a.type + a.props.instance;
         const bSort = b.type + b.props.instance;
+        let val = 0;
         if ( aSort < bSort ){
-            return -1;
+            val = -1;
         }
         if ( aSort > bSort ){
-            return 1;
+            val = 1;
         }
-        return 0;
+        if (a.type === NuggetType.Instance && b.type !== NuggetType.Instance) {
+            val = 1;
+        }
+        if (a.type !== NuggetType.Instance && b.type === NuggetType.Instance) {
+            val = -1;
+        }
+        return val;
     }
 
     function onSearchInputKeyUp(event) {        
@@ -110,7 +117,7 @@
         transition: all .3s;
     }
     input[type=search]:focus {
-        width: 600px;
+        width: 800px;
         background-color: #fff;
         box-shadow: 0 0 5px rgba(109,207,246,.5);
     }
@@ -130,34 +137,59 @@
         z-index: 1;
         flex-direction: column;
     }
+    .option {
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #ccc;
+        cursor: pointer;
+    }
+    .option:hover {
+        background-color: #ededed;
+    }
     .option img, .nugget img {
         height: 20px;
         width: 15px;
-        margin-right: 5px;
+        margin-right: 12px;
     }
     .option-type-name {
         color: #666;
         padding-right: 10px;
     }
-    .nuggets-container {        
+    .option-muted {
+        color: #999;
+    }
+    .nuggets-container {
+        padding: 10px 10px;
         background-color: #fff;
         position: absolute;
         width: 100%;
         display: flex;
         z-index: 1;
         flex-direction: row;
+        align-items: center;
     }
-
+    .nugget {
+        display: flex;
+        align-items: center;
+        padding-left: 25px;
+    }
+    .nugget-type-name {
+        margin-left: -25px;
+        display: flex;
+        align-items: center;
+    }
     .active {
-        background-color: steelblue;
+        background-color: #ededed;
     }
 </style>
 
 <div class="search">
 	<input type="search"
         id="search-input"
+        autocomplete="off"
         placeholder="Search"
-        style="width:{activeText.length > 0 || nuggets.length > 0 ? '600px' : null}"
+        style="width:{activeText.length > 0 || nuggets.length > 0 ? '800px' : null}"
         bind:value={activeText} on:keyup={onSearchInputKeyUp} />
 
     {#if nuggets && nuggets.length > 0 }
@@ -171,15 +203,33 @@
                 { nugget.props.instance }                
             {/if}
             {#if nugget.type === NuggetType.Attribute}
-                <span class="nugget-type-name">{ nugget.props.concept } attribute -</span>{ nugget.props.attribute }
+                { nugget.props.attribute }
             {/if}
             {#if nugget.type === NuggetType.Widget}
-                <span class="nugget-type-name">{ nugget.props.concept } widget -</span>{ nugget.props.widget }
+                { nugget.props.widget }
             {/if}
             {#if nugget.type === NuggetType.Set}
-                <span class="nugget-type-name">{ nugget.props.concept }</span>
-                {#each nugget.props.attributeValues as att }
-                    <span>{ att.attribute }: { att.value },</span>
+                <img alt=""
+                    src={$State.data.concepts[nugget.props.concept].icon}
+                    style="position: absolute;left: 10px;top: 10px;"
+                />
+                <img alt=""
+                    src={$State.data.concepts[nugget.props.concept].icon}
+                    style="position: absolute;left: 13px;top: 9px;"
+                />
+                <img alt=""
+                    src={$State.data.concepts[nugget.props.concept].icon}
+                    style="position: absolute;left: 16px;top: 8px;"
+                />
+                {#each nugget.props.attributeValues as att, i }
+                    {#if i !== 0}
+                    <span>,&nbsp;</span>
+                    {/if}
+                    <span>
+                        { att.value }
+                        <span class="option-muted">({ att.attribute.toLowerCase() })                            
+                        </span>                        
+                    </span>
                 {/each}
             {/if}
             </div>
@@ -195,6 +245,7 @@
                 {#if option.type === NuggetType.Instance}                
                     <img alt=""
                         src={$State.data.concepts[option.props.concept].icon}
+                        style="margin-left: -7px;"
                     />
                     { option.props.instance }                
                 {/if}
@@ -208,8 +259,23 @@
                     <span class="option-type-name">{ option.props.concept } widget -</span>{ option.props.widget }
                 {/if}
                 {#if option.type === NuggetType.Set}
-                    <span class="option-type-name">{ option.props.concept }</span>
-                    { option.props.attributeValues[0].attribute }: { option.props.attributeValues[0].value }
+                    <div style="position: relative">
+                        <img alt=""
+                            src={$State.data.concepts[option.props.concept].icon}
+                            style="position: absolute;left: -8px;top: 0px;"
+                        />
+                        <img alt=""
+                            src={$State.data.concepts[option.props.concept].icon}
+                            style="position: absolute;left: -5px;top: -1px;"
+                        />
+                        <img alt=""
+                            src={$State.data.concepts[option.props.concept].icon}
+                            style="position: absolute;left: -2px;top: -2px;"
+                        />
+                        <span style="padding-left: 20px">
+                            { option.props.attributeValues[0].value } <span class="option-muted">({ option.props.attributeValues[0].attribute.toLowerCase() })</span>
+                        </span>
+                    </div>                    
                 {/if}
             </div>
         {/each}

@@ -258,7 +258,7 @@ export function searchIndex(search : string, currentNuggets: Nugget[]) : Nugget[
             }
             
         }
-    });
+    });    
     
     return nuggets.filter(n => !!n);
 }
@@ -454,13 +454,19 @@ export function navigateFromSearch(nuggets: Nugget[]) {
 
     // 1 set + non-chart attributes or sparlines => pre-configured list
     if (attributes.length + sparklines.length > 0 &&
-        sets.length === 1) {            
+        sets.length === 1) {
+            //@ts-ignore
+            const idAttribute = Object.values(savedData.data.concepts[sets[0].props.concept].attributes).filter(a => a.type === DataType.Identifier)[0].name;
+            let atts = attributes && attributes.map(a => a.props.attribute) || [];
+            if (atts.indexOf(idAttribute)) {
+                atts.unshift(idAttribute);
+            }
             State.goTo(Screen.Concept, {
                 concept: sets[0].props.concept,
                 widget: ConceptScreen.Lists,
                 customList: {
                     sparklines: sparklines || [],
-                    attributes: attributes && attributes.map(a => a.props.attribute) || [],
+                    attributes: atts,
                 },
             });
     }
