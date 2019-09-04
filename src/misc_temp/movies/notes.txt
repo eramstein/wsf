@@ -1,0 +1,5 @@
+datasource:
+https://www.kaggle.com/rounakbanik/the-movies-dataset
+
+image link example:
+http://image.tmdb.org/t/p/w185//7EdqiNbr4FRjIhKHyPPdFfEEEFG.jpg
