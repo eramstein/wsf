@@ -19,7 +19,7 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
     const headers = lines[0].split(",");
     const attributes = {};
 
-    for(let i=1;i<lines.length;i++){
+    for(let i=1;i<lines.length - 1;i++){
         const obj = {};
         const currentline = lines[i].split(",");
         for(let j=0;j<headers.length;j++){
@@ -46,7 +46,7 @@ export function csvIntoConcept(csv: any, name: string) : Concept {
         if (j === 0) {
             attributes[headers[j]].type = DataType.Identifier;
         } else {
-            for(let i=1;i<lines.length;i++){
+            for(let i=1;i<lines.length - 1;i++){
                 const val = lines[i].split(",")[j];
                 if (val) {                
                     if (!isNaN(parseFloat(val)) && isFinite(val)) {                    
