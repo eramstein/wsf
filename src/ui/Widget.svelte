@@ -20,7 +20,7 @@
             it is a self-executing anonymous function returning another f2 function
             f2 receives the entity's data and State as a parameters and returns the node
             example:
-            (() => (data, State) => { 
+            (() => (data, State, get) => { 
                 const node = document.createElement('div');
                 node.innerHTML='itsa me, ' + data.name;
                 node.onclick=()=>{ State.sayHello('ciao'); };
@@ -35,11 +35,12 @@
     */
 
     import { afterUpdate } from 'svelte';
+    import { get } from "svelte/store";
     import { State } from '../stores';
     export let data;
     export let template;
     export let script;
-    export let computedNode;
+    export let computednode;
 
     let container;
     let shadowRoot;   
@@ -57,9 +58,9 @@
         if (script) {
             computed = eval(script);
         }
-        if (computedNode) {
-            //TO TEST: can the computed node code use State.get() ? instead of passing all data, just an ID
-            createdNode = eval(computedNode)(data, State);
+        if (computednode) {
+            // fully created nodes can use State store functions and get(State)        
+            createdNode = eval(computednode)(data, State, get);
         } else {
             const allData = { ...data, ...computed };
             function replacer(match, p1) {
@@ -68,8 +69,12 @@
             filledTemplate = template.replace(/{{(.+?)}}/g, replacer);
         }        
         
-        if (computedNode) {
-            shadowRoot.appendChild(createdNode);
+        if (computednode) {
+            console.log(shadowRoot.children.length);
+            if (shadowRoot.children.length === 0) {
+                console.log('APPEND');
+                shadowRoot.appendChild(createdNode);
+            }            
         } else {
             shadowRoot.innerHTML = filledTemplate;
         }        

@@ -1,0 +1,56 @@
+<style>
+    .row { display:flex; padding-bottom: 5px; }
+    .title { justify-content: space-between; }
+    .muted { color: #666; padding-top: 10px; }
+</style>
+
+<div>
+    <div class="row title">
+        <div>
+            <div>
+                 <b>{{Title}}</b>
+            </div>
+            <div class="row">
+                 <i>
+                      {{successText}}
+                </i>
+            </div>
+        </div>        
+        <div style="white-space:nowrap">
+            {{dollars}}
+        </div>
+    </div>
+    <div class="row">
+        <div>
+              Budget: ${{Budget}} millions
+        </div>
+    </div>
+    <div class="row">
+        <div>
+              Revenue: ${{Revenue}} millions
+        </div>
+    </div>    
+</div>
+
+(() => {
+
+const dollar = '<img width="20px" alt="star-full" src="https://cdn2.iconfinder.com/data/icons/user-interface-icons-bundle-4/32/228-512.png" style="filter: invert(28%) sepia(100%) hue-rotate(420deg) saturate(3);">';
+
+const success = data['Commercial Success'];
+
+const dollars = success === 'Blockbuster' ? dollar + dollar + dollar + dollar
+: 'High' ? dollar + dollar + dollar
+: 'Medium' ? dollar + dollar
+: dollar;
+
+const successText = success === 'Blockbuster' ? 'Blockbuster' : success + ' Success';
+
+return {
+    dollars,
+    successText,
+};
+
+})()
+
+
+4cols * 100

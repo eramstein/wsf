@@ -1,0 +1,3 @@
+<img src="http://image.tmdb.org/t/p/w185/{{Poster path}}" />
+
+200px * 268px

@@ -5,7 +5,7 @@
     import { GRID_COLUMNS, BUTTON_EDIT } from "../../constants";
     import Widget from "../Widget.svelte";
 
-    const MAX_CARDS = 20;
+    const MAX_CARDS = 24;
     
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
@@ -160,7 +160,7 @@
                 <div class="card"
                     style="min-height: minmax(100px, {widget.height}px);">
                     <Widget
-                        template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ entity }
+                        template={ widget.template } script={ widget.script } computednode={ widget.computedNode } data={ entity }
                     />
                 </div>
             {/each}

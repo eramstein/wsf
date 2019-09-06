@@ -47,7 +47,7 @@
         position: relative;
     }
     .config {
-        height: 40px;
+        height: 35px;
         display: flex;
         padding: 10px 20px;
     }

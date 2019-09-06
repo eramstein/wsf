@@ -22,7 +22,9 @@
         if (!initialName) {            
             initialName = widgetAuthoring.widget.name;
         }
-         
+        if (!widgetAuthoring.widget.props) {            
+            widgetAuthoring.widget.props = '';
+        }         
     }
 
     function save() {

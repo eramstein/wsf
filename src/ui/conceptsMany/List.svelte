@@ -325,7 +325,7 @@
                     {#each displayedWidgets as widget (widget.name) }
                         <td>
                             <Widget
-                                template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ item }
+                                template={ widget.template } script={ widget.script } computednode={ widget.computedNode } data={ item }
                             />
                         </td>
                     {/each}

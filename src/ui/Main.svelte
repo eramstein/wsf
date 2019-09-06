@@ -21,7 +21,7 @@
         display: flex;
         flex-flow: column;
         height: 100%;
-        color: #333;
+        color: #333;        
     }
     .top {
         height: 50px;

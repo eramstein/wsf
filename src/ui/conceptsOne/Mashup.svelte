@@ -180,7 +180,7 @@
     }
     .mashup {
         display: grid;
-        grid-template-columns: auto auto auto;
+        grid-template-columns: auto auto;
         grid-template-rows: auto auto;
         grid-gap: 0px;
         background-color: #fbfbfb;
@@ -256,7 +256,7 @@
                 <div class="card"
                     style="min-height: minmax(100px, {widget.height}px);">
                     <Widget
-                        template={ widget.template } script={ widget.script } computedNode={ widget.computedNode } data={ instance }
+                        template={ widget.template } script={ widget.script } computednode={ widget.computedNode } data={ instance }
                     />
                 </div>
             {/each}

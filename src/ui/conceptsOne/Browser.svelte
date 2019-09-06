@@ -116,7 +116,7 @@
     <div class="content">
         {#if currentWidget !== RELATIONS_WIDGET && currentWidget !== DEFAULT_WIDGET }
             <Widget
-                template={ currentWidget.template } script={ currentWidget.script } computedNode={ currentWidget.computedNode } data={ data }
+                template={ currentWidget.template } script={ currentWidget.script } computednode={ currentWidget.computedNode } data={ data }
             />
         {/if}
         {#if currentWidget === RELATIONS_WIDGET }

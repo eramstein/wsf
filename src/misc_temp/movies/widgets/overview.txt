@@ -1,0 +1,46 @@
+<style>
+    .row { display:flex; padding-bottom: 5px; }
+    .title { justify-content: space-between; }
+    .muted { color: #666; padding-top: 10px; }
+</style>
+
+<div style="display: flex;">
+    <div style="display: flex;padding-right: 50px;">
+              <img src="http://image.tmdb.org/t/p/w185/{{Poster path}}" />
+    </div>
+    <div>
+    <div class="row title">
+        <div>
+            <div>
+            <b>{{Title}}</b>
+            </div>
+            <div class="row">
+                 <i>
+                      {{Tagline}}
+                </i>
+         </div>
+        </div>        
+        <div>
+            <wsf-flag data-language={{Language}}></wsf-flag>
+        </div>
+    </div>    
+    <div class="row title">
+        <div>
+             {{Genre}} - {{Release Date}}
+        </div>
+        <div>
+            {{Production company}}
+        </div>
+    </div>    
+    <div class="row muted">
+        <div>
+            {{Overview}}
+        </div>
+    </div>
+    <div class="row">
+        <div>
+              <a href="{{Homepage}}">homepage</a>
+        </div>
+    </div>
+    </div>
+</div>
