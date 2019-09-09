@@ -1,0 +1,23 @@
+<div style="white-space:nowrap; display:flex; align-items: center;">
+      {{dollars}} <div style="padding-left: 10px;">{{successText}}</div>
+</div>
+
+(() => {
+
+const dollar = '<img width="15px" alt="star-full" src="https://cdn2.iconfinder.com/data/icons/user-interface-icons-bundle-4/32/228-512.png" style="filter: invert(28%) sepia(100%) hue-rotate(420deg) saturate(3);margin-right:-4px;margin-top:-1px;">';
+
+const success = data['Commercial Success'] || data.success;
+
+const dollars = success === 'Blockbuster' ? dollar + dollar + dollar + dollar
+: 'High' ? dollar + dollar + dollar
+: 'Medium' ? dollar + dollar
+: dollar;
+
+const successText = success === 'Blockbuster' ? 'Blockbuster' : success + ' Success';
+
+return {
+    dollars,
+    successText,
+};
+
+})()

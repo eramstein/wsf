@@ -96,8 +96,9 @@
         :
             config.widgets ?
             Object.entries(config.widgets)
-                .filter(c => c[1] === true)
+                .filter(c => c[1] === true)                
                 .map(c => concept.widgets.one[c[0]])
+                .sort((a, b) => { return a.name.localeCompare(b.name) })
             : [];
 
     $: selectedList = config.id;
@@ -294,6 +295,9 @@
                     <th>
                         <div class="column-name">                        
                             { widget.name }
+                        </div>
+                        <div>
+                            <input class="filter-input" />
                         </div>
                     </th>
                 {/each}

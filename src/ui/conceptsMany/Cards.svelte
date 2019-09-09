@@ -53,10 +53,7 @@
     let container;
     let columns = 3;
 
-    afterUpdate(() => {
-
-        console.log(widget);
-        
+    afterUpdate(() => {        
         
         if (!widget) {
             return false;

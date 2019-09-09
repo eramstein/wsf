@@ -1,6 +1,6 @@
 <script>
     import { State } from '../stores';
-    import { Screen, ConceptScreen, InstanceScreen, DataType } from '../model';
+    import { Screen, ConceptScreen, InstanceScreen, DataType, Cardinality } from '../model';
     import { capitalize } from '../utils';
     import Link from './Link.svelte'
     import Search from './Search.svelte'
@@ -25,6 +25,21 @@
             Screen.Instance,
             { concept: $State.ui.lastOpenConcept, instance: targetInstance, widget: $State.ui.screenParameters.widget }
         );
+    }
+
+    function addWidget() {
+        State.openWidgetAuthoring({
+            widget: {
+                name: 'New widget',
+                height: null,
+                width: null,
+                template: '',
+                script: '',
+                computedNode: '',                
+            },
+            cardinality: Cardinality.Many,
+            conceptName: $State.ui.screenParameters.concept,
+        });
     }
 
     $: otherConcepts = $State.ui.openScreen === Screen.Concept ?
@@ -134,6 +149,11 @@
         position: absolute;
         top: 5px;
         right: 12px;
+    }
+    .add-widget {
+        font-size: 24px;
+        font-weight: bold;
+        border-right: none !important;
     }
 </style>
 
@@ -246,6 +266,7 @@
                         Cards                
                     </div>
                 </Link>
+                <div class="tab add-widget" on:click={ () => addWidget() }>+</div>
             {/if}
 
             {#if $State.ui.openScreen === Screen.Instance}

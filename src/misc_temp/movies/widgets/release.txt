@@ -1,0 +1,2 @@
+<div style="white-space: nowrap">{{Production company}}</div>
+<div>{{Release Date}}</div>

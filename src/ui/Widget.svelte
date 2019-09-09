@@ -70,9 +70,7 @@
         }        
         
         if (computednode) {
-            console.log(shadowRoot.children.length);
             if (shadowRoot.children.length === 0) {
-                console.log('APPEND');
                 shadowRoot.appendChild(createdNode);
             }            
         } else {
