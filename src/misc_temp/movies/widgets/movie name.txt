@@ -10,9 +10,7 @@
             <b>{{Title}}</b>
             </div>
             <div class="row tag">
-                 <i>
-                      {{Tagline}}
-                </i>
+                {{Tagline}}
          </div>
         </div> 
     </div>  

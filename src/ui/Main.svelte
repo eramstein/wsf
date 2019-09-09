@@ -2,6 +2,7 @@
     import { State } from '../stores';
     import { Screen, ConceptScreen, InstanceScreen } from '../model';
     import MainBar from './MainBar.svelte'
+    import Widget from './Widget.svelte'
     import Concepts from './conceptsManagement/Concepts.svelte';
     import Articles from './articles/Articles.svelte';
     import Article from './articles/Article.svelte';
@@ -13,7 +14,7 @@
     import Mashup from './conceptsOne/Mashup.svelte';
     import Relations from './conceptsOne/Relations.svelte';
     import WidgetAuthoring from './widgetAuthoring/WidgetAuthoring.svelte';
-    import { LEFT_BAR_WIDTH } from '../constants';    
+    import { LEFT_BAR_WIDTH } from '../constants';
 </script>
 
 <style>
@@ -81,6 +82,10 @@
                             <Cards />
                         {:else if $State.ui.screenParameters.widget === ConceptScreen.Charts}
                             <Chart />
+                        {:else if $State.ui.screenParameters.widget === ConceptScreen.Widget}
+                            <Widget
+                                template={null} script={null} data={null}
+                                computednode={ $State.data.concepts[$State.ui.lastOpenConcept].widgets.many[$State.ui.screenParameters.widgetName].computedNode } />
                         {/if}
                     </div>
                 {/if}             

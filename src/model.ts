@@ -16,6 +16,7 @@ export enum ConceptScreen {
     Charts = "CHARTS",
     Cards = "CARDS",
     Management = "MANAGEMENT",
+    Widget = "WIDGET",
 }
 
 export enum InstanceScreen {

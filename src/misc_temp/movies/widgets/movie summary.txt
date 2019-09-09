@@ -11,9 +11,7 @@
             <b>{{Genre}}</b>
             </div>
             <div class="row muted">
-                 <i>
-                      {{text}}
-                </i>
+                {{text}}
          </div>
         </div> 
     </div>  

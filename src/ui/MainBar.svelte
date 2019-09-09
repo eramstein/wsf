@@ -42,10 +42,21 @@
         });
     }
 
+    function selectWidget(name) {
+        if ($State.ui.screenParameters.widgetName === name) {
+            State.openWidgetAuthoring({
+                widget: $State.data.concepts[$State.ui.lastOpenConcept].widgets.many[name],
+                cardinality: Cardinality.Many,
+                conceptName: $State.ui.lastOpenConcept,
+            });
+        }        
+    }
+
     $: otherConcepts = $State.ui.openScreen === Screen.Concept ?
         Object.values($State.data.concepts).filter(c => c.name !== $State.ui.screenParameters.concept)    
     : [];
 
+    let widgets;
     let nextItem;
     let prevItem;
 
@@ -56,7 +67,10 @@
             const index = $State.ui.filteredItems.map(i => i[identifier]).indexOf($State.ui.screenParameters.instance);
             nextItem = index >= $State.ui.filteredItems.length ? 0 : $State.ui.filteredItems[index + 1] && $State.ui.filteredItems[index + 1][identifier];
             prevItem = index === 0 ? $State.ui.filteredItems[$State.ui.filteredItems.length - 1] : $State.ui.filteredItems[index - 1] && $State.ui.filteredItems[index - 1][identifier];
-        }          
+        }
+        if ($State.ui.openScreen === Screen.Concept) {
+            widgets = Object.values($State.data.concepts[$State.ui.lastOpenConcept].widgets.many); 
+        }
     }
 
 </script>
@@ -262,10 +276,17 @@
                     </div>
                 </Link>
                 <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Cards } }>
-                    <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Cards }">                
+                    <div class="tab" class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Cards }">
                         Cards                
                     </div>
                 </Link>
+                {#each widgets as widget (widget.name) }
+                    <Link screen={ Screen.Concept } params={ { concept: $State.ui.screenParameters.concept, widget: ConceptScreen.Widget, widgetName: widget.name } }>
+                        <div class="tab" on:click={ () => selectWidget(widget.name) } class:selected="{ $State.ui.screenParameters.widget === ConceptScreen.Widget && $State.ui.screenParameters.widgetName === widget.name }">
+                            { widget.name }
+                        </div>
+                    </Link>
+                {/each}
                 <div class="tab add-widget" on:click={ () => addWidget() }>+</div>
             {/if}
 
