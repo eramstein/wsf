@@ -6,7 +6,7 @@
         <b>{{Title}}</b>
     </div>
     <div>
-        <wsf-stars data-vote="{{Vote Average}}"></stars>
+        <wsf-critics data-vote="{{Vote Average}}"></wsf-critics>
     </div>
     <div>
         <wsf-data

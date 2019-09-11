@@ -54,10 +54,10 @@ export function getNewMashup() : MashupConfig {
     }
 };
 
-// TODO - make better use of space, for now just sort by height
+// TODO - make better use of space, for now just sort by name
 export function getLayoutSimplified(widgetsData) {
     return widgetsData
-        .sort((a, b) => a.height - b.height)
+        .sort((a, b) => a.name - b.name)
         .map(w =>{        
             return {
                 ...w,

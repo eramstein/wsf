@@ -192,7 +192,7 @@
         style="width:{activeText.length > 0 || nuggets.length > 0 ? '800px' : null}"
         bind:value={activeText} on:keyup={onSearchInputKeyUp} />
 
-    {#if nuggets && nuggets.length > 0 }
+    {#if nuggets && nuggets.length > 0  && options.length === 0 }
     <div class="nuggets-container">
         {#each nuggets as nugget }
             <div class="nugget">

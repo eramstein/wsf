@@ -3,3 +3,12 @@ https://www.kaggle.com/rounakbanik/the-movies-dataset
 
 image link example:
 http://image.tmdb.org/t/p/w185//7EdqiNbr4FRjIhKHyPPdFfEEEFG.jpg
+
+movies banner: https://upload.wikimedia.org/wikipedia/en/thumb/d/de/Cin%C3%A9matographe_Lumi%C3%A8re.jpg/800px-Cin%C3%A9matographe_Lumi%C3%A8re.jpg
+movies logo: https://icon-library.net/images/movies-icon/movies-icon-6.jpg
+
+directors banner: https://www.bfi.org.uk/sites/bfi.org.uk/files/page/simon-cooper-directors-podium_1000x750.jpg
+directors logo: https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ-_ANz3l6a0cfqHzqjRkQVkMMt2A5O9RH5D_HMdJP9hexPeh27cw
+
+actors banner: https://pbs.twimg.com/media/DpYHrpWWkAA9-gD.jpg
+actors logo: http://www.iconarchive.com/download/i47166/icons-land/vista-people/Occupations-Actor-Male-Light.ico

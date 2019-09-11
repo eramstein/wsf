@@ -9,7 +9,9 @@
     
     let concept = $State.data.concepts[$State.ui.screenParameters.concept];
     let idAttribute = Object.values(concept.attributes).filter(a => a.type === DataType.Identifier)[0].name;
-    let widgets = Object.values(concept.widgets.one);    
+    let widgets = Object.values(concept.widgets.one);
+    // TODO: handle overflow better (temp for demo)
+    if (widgets.length > 9) { widgets = widgets.slice(0, 8)}
     let lastOpenWidget = $State.ui.lastOpenWidget && widgets.filter(w => w.name === $State.ui.lastOpenWidget)[0];   
     let widgetToOpen = $State.ui.screenParameters.defaultWidget || lastOpenWidget;
     let widget = widgets.length > 0 && (widgetToOpen || widgets[0]);

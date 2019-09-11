@@ -191,7 +191,7 @@ export function buildSearchIndex(data : Data) {
         lowerCaseDefinitions[key.toLowerCase()] = definitions[key];
     }
 
-    words = Array.from(new Set(words));
+    words = Array.from(new Set(words));    
     
     return {
         words: words.map(w => w.toLowerCase()),

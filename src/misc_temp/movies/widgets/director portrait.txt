@@ -1,0 +1,12 @@
+<img src="http://image.tmdb.org/t/p/w185/{{image}}" />
+
+(() => {
+
+return {
+image: Object.values(data)[3],
+}
+
+})()
+
+
+3cols * 300

@@ -49,6 +49,8 @@ function createFullState() {
         }),
         updateArticle: (id, content) => update(s => { s.data.articles[id] = content; saveState(); return s; }),
         deleteArticle: (id) => update(s => { delete s.data.articles[id]; saveState(); return s; }),
+        updateUserPreferences: (prefs) => update(s => { s.data.user.preferences.concepts = prefs; saveState(); return s; }),
+        updateConceptImages: (conceptName, banner, icon) => update(s => { s.data.concepts[conceptName].banner = banner; s.data.concepts[conceptName].icon = icon; saveState(); return s; }),
     };
 }
 
