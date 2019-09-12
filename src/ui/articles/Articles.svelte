@@ -65,7 +65,7 @@
     .about-items {
         position: absolute;
         top: 10px;
-        right: 10px;
+        left: 840px;
         float: right;
     }
     .item {
@@ -90,6 +90,7 @@
     }
     .content {
         overflow: hidden;
+        width: 800px;
     }
 </style>
 

@@ -34,13 +34,14 @@
         } else {
             widgetAuthoring.computedNode = null;
         }        
-        let props = widgetAuthoring.widget.props;
+        let props = widgetAuthoring.widget.props;        
         if (props.length > 0) {
             if (Array.isArray(props)) {
                  props = props.join(',');
             }
             props = props.replace(/ /g,'_').split(',');
         }
+        State.updateWidgetAuthoringProps(props);
         State.deleteWidget(initialName);
         State.saveWidget();
         State.closeWidgetAuthoring();

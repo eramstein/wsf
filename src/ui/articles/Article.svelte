@@ -55,6 +55,22 @@
         shadowRoot = preview.attachShadow({mode: 'open'});
     });
 
+    function findClickedText(e) {
+        s = window.getSelection();
+        var range = s.getRangeAt(0);
+        var node = s.anchorNode;
+        while (range.toString().indexOf(' ') != 0) {
+            range.setStart(node, (range.startOffset - 1));
+        }
+        range.setStart(node, range.startOffset + 1);
+        do {
+            range.setEnd(node, range.endOffset + 1);
+
+        } while (range.toString().indexOf(' ') == -1 && range.toString().trim() != '' && range.endOffset < node.length);
+        var str = range.toString().trim();
+        alert(str);
+    }
+
     afterUpdate(() => {
         if (!titleInserted) {
             titleValue = article.title || '';
@@ -62,7 +78,9 @@
             titleInserted = true;
         }
         if (editMode && !contentInserted) {
-            document.getElementById('editor').innerText = article.content;
+            const editor = document.getElementById('editor');
+            editor.innerText = article.content;
+            editor.oncontextmenu = findClickedText;
             contentInserted = true;
         } else {
             let filledTemplate = article.content.replace(/\n/g, '<br />');

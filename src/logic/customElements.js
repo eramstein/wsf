@@ -1,4 +1,6 @@
 // NOTE: this is a JS file instead of TS to avoid transpiling issues
+import { get } from "svelte/store";
+import { State } from '../stores';
 
 export function defineCustomElements(d) {
     Object.values(d).forEach(concept => {
@@ -20,8 +22,7 @@ export function defineCustomElements(d) {
                             computed = eval(script);
                         }
                         if (computedNode) {
-                            //TO TEST: can the computed node code use State.get() ? instead of passing all data, just an ID
-                            createdNode = eval(computedNode)(data);
+                            createdNode = eval(computedNode)(data, State, get);
                         } else {
                             const allData = { ...data, ...computed };
                             function replacer(match, p1) {
