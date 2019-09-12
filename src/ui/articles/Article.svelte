@@ -1,6 +1,8 @@
 <script>
     import { onMount, afterUpdate } from 'svelte';
     import { State } from '../../stores';
+    import { findClickedNuggets } from '../../logic/contextSearch.ts';
+    import Browser from "../conceptsOne/Browser.svelte";
 
     $: article = $State.data.articles[$State.ui.screenParameters.articleID];
     
@@ -16,6 +18,17 @@
 
     let widgets = [];
     let widgetsFound = [];
+    $: nuggetsFound = [];
+    $: nuggetToBrowse = null;
+
+    $: {
+        if (nuggetsFound.length > 0) {            
+            nuggetToBrowse = nuggetsFound[0];
+        } else {
+            nuggetToBrowse = null;
+        }
+    }
+
 
     let propsValues = {};
     
@@ -55,22 +68,6 @@
         shadowRoot = preview.attachShadow({mode: 'open'});
     });
 
-    function findClickedText(e) {
-        s = window.getSelection();
-        var range = s.getRangeAt(0);
-        var node = s.anchorNode;
-        while (range.toString().indexOf(' ') != 0) {
-            range.setStart(node, (range.startOffset - 1));
-        }
-        range.setStart(node, range.startOffset + 1);
-        do {
-            range.setEnd(node, range.endOffset + 1);
-
-        } while (range.toString().indexOf(' ') == -1 && range.toString().trim() != '' && range.endOffset < node.length);
-        var str = range.toString().trim();
-        alert(str);
-    }
-
     afterUpdate(() => {
         if (!titleInserted) {
             titleValue = article.title || '';
@@ -80,7 +77,7 @@
         if (editMode && !contentInserted) {
             const editor = document.getElementById('editor');
             editor.innerText = article.content;
-            editor.oncontextmenu = findClickedText;
+            editor.oncontextmenu = e => { nuggetsFound = findClickedNuggets(e) };
             contentInserted = true;
         } else {
             let filledTemplate = article.content.replace(/\n/g, '<br />');
@@ -185,6 +182,7 @@
     .article {
         margin: 10px 20px 0px 20px;
         height: calc(100% - 10px);
+        position: relative;
     }
     .top-bar {
         padding: 10px 0px;
@@ -242,6 +240,15 @@
         padding-bottom: 3px;
         font-size: 12px;
         color: #999;
+    }
+    .browser {
+        position: absolute;
+        top: 20px;
+        right: 40px;
+        border: 1px solid #ccc;
+        background-color: #f3f3f3;
+        width: 600px;
+        height: 600px;
     }
 </style>
 
@@ -308,6 +315,12 @@
     {/if}
     <div id="preview">
     </div>
+
+    {#if nuggetToBrowse }
+    <div class="browser">
+        <Browser concept={nuggetToBrowse.props.concept} item={nuggetToBrowse.props.instance} />
+    </div>
+    {/if}
     
 
 </div>

@@ -69,11 +69,22 @@ const moviesWidgets = {
             "props": "",
             "inMashups": true
       },
+      "Review": {
+        "name": "Review",
+        "height": 300,
+        "width": "4cols",
+        "template": "<style>\n</style>\n\n<div>\n    <div>\n        <b>{{title}}</b>\n    </div>\n    <div>\n        <wsf-critics data-vote=\"{{votes}}\"></wsf-critics>\n    </div>\n    <div>\n        <wsf-data\n            data-concept=\"movies\"\n            data-instance=\"{{title}}\"\n            data-attribute=\"Etienne Review\"\n            data-defval=\"{{defaultValue}}\"\n        ></wsf-data>\n    </div>\n</div>",
+        "script": "(() => {const title = data['Title'] || data.title; const defaultValue = data['Etienne Review'] || 'Not reviewed yet'; return {defaultValue, votes: data['Vote Average'] || 4, title , }; })()",
+        "computedNode": "",
+        "props": ["title"],
+        "inMashups": true,
+        "nestable": true
+      },
       "Metrics": {
         "name": "Metrics",
         "height": "100",
         "width": "4cols",
-        "template": "<style>\n    .row { display:flex; padding-bottom: 5px; }\n    .title { justify-content: space-between; }\n    .muted { color: #666; padding-top: 10px; }\n</style>\n\n<div>\n    <div class=\"row title\">\n        <div>\n            <div>\n                 <b>{{Title}}</b>\n            </div>\n            <div class=\"row\">\n                 <i>\n                      {{successText}}\n                </i>\n            </div>\n        </div>        \n        <div style=\"white-space:nowrap\">\n            {{dollars}}\n        </div>\n    </div>\n    <div class=\"row\">\n        <div>\n              Budget: ${{Budget}} millions\n        </div>\n    </div>\n    <div class=\"row\">\n        <div>\n              Revenue: ${{Revenue}} millions\n        </div>\n<div><img src='https://www.d3-graph-gallery.com/img/block/block_area.png' /></div>\n    </div>    \n</div>",
+        "template": "<style>\n    .row { display:flex; padding-bottom: 5px; }\n    .title { justify-content: space-between; }\n    .muted { color: #666; padding-top: 10px; }\n</style>\n\n<div>\n    <div class=\"row title\">\n        <div>\n            <div>\n                 <b>{{Title}}</b>\n            </div>\n            <div class=\"row\">\n                 <i>\n                      {{successText}}\n                </i>\n            </div>\n        </div>        \n        <div style=\"white-space:nowrap\">\n            {{dollars}}\n        </div>\n    </div>\n    <div class=\"row\">\n        <div>\n              Budget: ${{Budget}} millions\n        </div>\n    </div>\n    <div class=\"row\">\n        <div>\n              Revenue: ${{Revenue}} millions\n        </div>\n    </div><div><img src='https://www.d3-graph-gallery.com/img/block/block_area.png' /></div>\n    \n</div>",
         "script": "(() => {\n\nconst dollar = '<img width=\"20px\" alt=\"star-full\" src=\"https://cdn2.iconfinder.com/data/icons/user-interface-icons-bundle-4/32/228-512.png\" style=\"filter: invert(28%) sepia(100%) hue-rotate(420deg) saturate(3);\">';\n\nconst success = data['Commercial Success'];\n\nlet dollars; if (success === 'Blockbuster') {dollars = dollar + dollar + dollar + dollar; } if (success === 'High') {dollars = dollar + dollar + dollar; } if (success === 'Medium') {dollars = dollar + dollar; } if (success === 'Small') {dollars = dollar; } \n\nconst successText = success === 'Blockbuster' ? 'Blockbuster' : success + ' Success';\n\nreturn {\n    dollars,\n    successText,\n};\n\n})()",
         "computedNode": "",
         "props": "",
@@ -110,18 +121,7 @@ const moviesWidgets = {
         "computedNode": "",
         "props": "",
         "inMashups": true
-      },
-      "Review": {
-        "name": "Review",
-        "height": 300,
-        "width": "4cols",
-        "template": "<style>\n</style>\n\n<div>\n    <div>\n        <b>{{title}}</b>\n    </div>\n    <div>\n        <wsf-critics data-vote=\"{{votes}}\"></wsf-critics>\n    </div>\n    <div>\n        <wsf-data\n            data-concept=\"movies\"\n            data-instance=\"{{title}}\"\n            data-attribute=\"Etienne Review\"\n            data-defval=\"{{defaultValue}}\"\n        ></wsf-data>\n    </div>\n</div>",
-        "script": "(() => {const title = data['Title'] || data.title; const defaultValue = data['Etienne Review'] || 'Not reviewed yet'; return {defaultValue, votes: data['Vote Average'] || 4, title , }; })()",
-        "computedNode": "",
-        "props": ["title"],
-        "inMashups": true,
-        "nestable": true
-      },
+      },      
       "Revenue": {
         "name": "Revenue",
         "height": "20",
