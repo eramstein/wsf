@@ -149,7 +149,7 @@
     }
     .option img, .nugget img {
         height: 20px;
-        width: 15px;
+        width: 20px;
         margin-right: 12px;
     }
     .option-type-name {

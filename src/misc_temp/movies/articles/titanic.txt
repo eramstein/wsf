@@ -1,0 +1,10 @@
+This is a revenue figure immediately outdated: 1000000000$.
+
+This one uses a read-only data component: ${{Revenue}} millions.
+
+This one is the read/write component: <wsf-data data-concept="movies" data-instance="Titanic" data-attribute="Revenue"></wsf-data>
+
+I can also re-use components in articles for complex visualizations or interactions:
+<wsf-cast data-title="Titanic"></wsf-cast>
+
+I'm not really a big fan of Titanic, to be honest.

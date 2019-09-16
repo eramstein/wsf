@@ -74,6 +74,8 @@
     .name {
         width: 150px;
         margin-right: 20px;
+        white-space: nowrap;
+        padding-top: 3px;
     }
     .images {
         margin-left: 50px;

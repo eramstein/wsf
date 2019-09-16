@@ -129,11 +129,13 @@
         {#if spread.max !== spread.q1 && spread.max !== spread.q3 }
         <div class="label label-bottom label-max" style="left: { scale(spread.max) }px">{ spread.max }</div>
         {/if}
-        {#if spread.med !== spread.min && spread.med !== spread.max }
+        {#if spread.med !== spread.min && spread.med !== spread.max && scale(spread.med) - scale(spread.q1) > 10 }
         <div class="label label-bottom label-med" style="left: { scale(spread.med) }px">{ spread.med }</div>
         {/if}
+        {#if scale(spread.q3) - scale(spread.med) > 10 }
         <div class="label label-top label-q1" style="left: { scale(spread.q1) }px">{ spread.q1 }</div>        
         <div class="label label-top label-q3" style="left: { scale(spread.q3) }px">{ spread.q3 }</div>
+        {/if}
     </div>
 {:else}
     <div class="boxplot">

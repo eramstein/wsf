@@ -387,7 +387,13 @@ export function navigateFromSearch(nuggets: Nugget[]) {
                 };
             } else {
                 //@ts-ignore
-                newFilters[oldFilter[0]] = oldFilter[1]; 
+                newFilters[oldFilter[0]] = {
+                    collapsed: false,
+                    limited: true,
+                    from: null,
+                    to: null,
+                    categories: {},
+                }; 
             }
         });
         State.updateConceptFilters(set.props.concept, newFilters);
@@ -454,6 +460,7 @@ export function navigateFromSearch(nuggets: Nugget[]) {
 
     // 1 set + non-chart attributes or sparlines => pre-configured list
     if (attributes.length + sparklines.length > 0 &&
+        !allChartAttributes &&
         sets.length === 1) {
             //@ts-ignore
             const idAttribute = Object.values(savedData.data.concepts[sets[0].props.concept].attributes).filter(a => a.type === DataType.Identifier)[0].name;

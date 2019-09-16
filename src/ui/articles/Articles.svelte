@@ -78,7 +78,7 @@
     }
     .item img {
         height: 20px;
-        width: 15px;
+        width: 20px;
         margin-right: 5px;
     }
     .item:hover {

@@ -4,7 +4,10 @@
     import Link from '../Link.svelte';
 
     export let item;
-    export let conceptRelations;    
+    export let conceptRelations;
+
+    console.log(item);
+    
         
 </script>
 

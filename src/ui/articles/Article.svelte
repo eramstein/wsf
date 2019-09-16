@@ -78,6 +78,7 @@
             const editor = document.getElementById('editor');
             editor.innerText = article.content;
             editor.oncontextmenu = e => { nuggetsFound = findClickedNuggets(e) };
+            editor.spellcheck = false;
             contentInserted = true;
         } else {
             let filledTemplate = article.content.replace(/\n/g, '<br />');
@@ -257,13 +258,14 @@
     {#if editMode}
         <div class="top-bar" on:click={ e => stopSearch(e) }>
             <div class="top-bar-left">
-                <div class="title">
-                    <input bind:value={ titleValue } style="width: 400px" placeholder="Enter title">
+                <div class="title">                
+                    <input bind:value={ titleValue } style="width: 400px" autocomplete="off" placeholder="Enter title">
                 </div>
                 <div class="widgets">
                     <input class="widgets-input"
                         id="widget-search"
                         placeholder="Search to insert widgets"
+                        autocomplete="off"
                         bind:value={ searchString }
                         on:click={ resetSearch }
                         style="width: 400px">
